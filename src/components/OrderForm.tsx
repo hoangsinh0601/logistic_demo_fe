@@ -47,8 +47,13 @@ export const OrderForm: React.FC = () => {
             setQuantity(1);
             setNote('');
             setSelectedProductId('');
-        } catch (err: any) {
-            setErrorMsg(err.response?.data?.message || 'Failed to create order');
+        } catch (err: unknown) {
+            if (err instanceof Error && 'response' in err) {
+                const axiosError = err as { response?: { data?: { message?: string } } };
+                setErrorMsg(axiosError.response?.data?.message || 'Failed to create order');
+            } else {
+                setErrorMsg('Failed to create order');
+            }
         }
     };
 

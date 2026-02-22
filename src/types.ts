@@ -38,3 +38,40 @@ export interface WsMessage {
     new_stock: number;
   };
 }
+
+// --- USER MANAGEMENT TYPES ---
+
+export interface User {
+  id: string;
+  username: string;
+  email: string;
+  phone: string;
+  role: string;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface CreateUserPayload {
+  username: string;
+  email: string;
+  phone: string;
+  password?: string;
+  role: string;
+}
+
+export interface UpdateUserPayload {
+  username: string;
+  email: string;
+  phone: string;
+  role: string;
+  password?: string;
+}
+
+export interface PaginatedResponse<T> {
+  data: {
+    users: T[];
+    total: number;
+    page: number;
+    limit: number;
+  };
+}

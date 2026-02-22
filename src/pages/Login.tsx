@@ -35,8 +35,15 @@ export const Login: React.FC = () => {
             login(meRes.data.data); // Cập nhật state với Info của User
 
             navigate('/dashboard', { replace: true });
-        } catch (err: any) {
-            setError(err.response?.data?.message || 'Login failed, check your credentials');
+        } catch (err: unknown) {
+            console.error('Login error', err);
+
+            if (err instanceof Error && 'response' in err) {
+                const axiosError = err as { response?: { data?: { message?: string } } };
+                setError(axiosError.response?.data?.message || 'Invalid credentials');
+            } else {
+                setError('Invalid credentials');
+            }
         } finally {
             setLoading(false);
         }

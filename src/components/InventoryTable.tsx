@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { useGetProducts, useDeleteProduct } from '../hooks/useProducts';
 import type { Product } from '../types';
 import { useInventorySocket } from '../hooks/useInventorySocket';
@@ -27,26 +27,15 @@ export const InventoryTable: React.FC = () => {
     const { data: products = [], isLoading, error } = useGetProducts();
     const deleteProduct = useDeleteProduct();
 
-    const [highlightedRow, setHighlightedRow] = useState<string | null>(null);
-
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
 
     const { latestUpdate } = useInventorySocket();
 
-    // Cập nhật state realtime thông qua queryCache
-    useEffect(() => {
-        if (latestUpdate) {
-            // Note: Since we are using React Query, updating the queryCache directly 
-            // is technically more robust, but setting highlightedRow here is strictly UI
-            setHighlightedRow(latestUpdate.product_id);
-            const timer = setTimeout(() => setHighlightedRow(null), 2000);
-            return () => clearTimeout(timer);
-        }
-    }, [latestUpdate]);
+    const highlightedRow = latestUpdate?.product_id || null;
 
-    if (isLoading) return <div>Loading Inventory...</div>;
-    if (error) return <div>Error loading inventory</div>;
+    if (isLoading) return <div className="p-8">Loading Inventory...</div>;
+    if (error) return <div className="p-8 text-destructive">Error loading inventory</div>;
 
     const handleCreateNew = () => {
         setSelectedProduct(null);

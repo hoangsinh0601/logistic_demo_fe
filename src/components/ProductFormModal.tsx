@@ -40,8 +40,11 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
     useEffect(() => {
         if (open) {
             if (isEditing && product) {
+                // eslint-disable-next-line react-hooks/set-state-in-effect
                 setSku(product.sku);
+                 
                 setName(product.name);
+                 
                 setPrice(product.price);
             } else {
                 setSku('');
@@ -68,8 +71,13 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
                 });
             }
             onOpenChange(false);
-        } catch (err: any) {
-            setErrorMsg(err.response?.data?.message || 'Failed to save product');
+        } catch (err: unknown) {
+            if (err instanceof Error && 'response' in err) {
+                const axiosError = err as { response?: { data?: { message?: string } } };
+                setErrorMsg(axiosError.response?.data?.message || 'Failed to save product');
+            } else {
+                setErrorMsg('Failed to save product');
+            }
         }
     };
 

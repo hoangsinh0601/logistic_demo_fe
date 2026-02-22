@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import type { ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../api/api';
@@ -26,18 +26,18 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     const [isLoading, setIsLoading] = useState<boolean>(true);
     const navigate = useNavigate();
 
-    const handleLogout = async () => {
+    const handleLogout = useCallback(async () => {
         try {
             localStorage.removeItem('token');
             localStorage.removeItem('refresh_token');
-        } catch (e) {
-            console.error("Logout error", e);
+        } catch {
+            // Ignored
         } finally {
             setIsAuthenticated(false);
             setUser(null);
             navigate('/login', { replace: true });
         }
-    };
+    }, [navigate]);
 
     useEffect(() => {
         // Lắng nghe sự kiện 401 từ Axios
@@ -56,7 +56,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
                 const res = await api.get('/me'); // Lấy info dựa vào Token lấy từ local storage
                 setIsAuthenticated(true);
                 setUser(res.data.data);
-            } catch (error) {
+            } catch {
                 setIsAuthenticated(false);
                 setUser(null);
                 localStorage.removeItem('token');
@@ -69,7 +69,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         verifySession();
 
         return () => window.removeEventListener('auth:unauthorized', handleUnauthorized as EventListener);
-    }, []);
+    }, [handleLogout]);
 
     const login = (userData: User) => {
         setIsAuthenticated(true);
@@ -83,6 +83,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     );
 };
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const useAuth = () => {
     const context = useContext(AuthContext);
     if (!context) throw new Error('useAuth must be used within an AuthProvider');
