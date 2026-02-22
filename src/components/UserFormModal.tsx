@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import {
     Dialog,
@@ -32,6 +33,7 @@ export const UserFormModal: React.FC<UserFormModalProps> = ({
     user,
 }) => {
     const isEditing = !!user;
+    const { t } = useTranslation();
 
     const [username, setUsername] = useState('');
     const [email, setEmail] = useState('');
@@ -106,7 +108,7 @@ export const UserFormModal: React.FC<UserFormModalProps> = ({
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent className="sm:max-w-[425px]">
                 <DialogHeader>
-                    <DialogTitle>{isEditing ? 'Edit User' : 'Create User'}</DialogTitle>
+                    <DialogTitle>{isEditing ? t('users.userForm.editTitle') : t('users.userForm.createTitle')}</DialogTitle>
                     <DialogDescription>
                         {isEditing
                             ? "Update user details. Leave password blank to keep current password."
@@ -123,49 +125,52 @@ export const UserFormModal: React.FC<UserFormModalProps> = ({
                 <form onSubmit={handleSubmit} className="space-y-4 py-4">
                     <div className="grid grid-cols-4 items-center gap-4">
                         <Label htmlFor="username" className="text-right">
-                            Username
+                            {t('users.userForm.username')}
                         </Label>
                         <Input
                             id="username"
                             className="col-span-3"
                             required
+                            placeholder={t('users.userForm.usernamePlaceholder')}
                             value={username}
                             onChange={(e) => setUsername(e.target.value)}
                         />
                     </div>
                     <div className="grid grid-cols-4 items-center gap-4">
                         <Label htmlFor="email" className="text-right">
-                            Email
+                            {t('users.userForm.email')}
                         </Label>
                         <Input
                             id="email"
                             type="email"
                             className="col-span-3"
                             required
+                            placeholder={t('users.userForm.emailPlaceholder')}
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
                         />
                     </div>
                     <div className="grid grid-cols-4 items-center gap-4">
                         <Label htmlFor="phone" className="text-right">
-                            Phone
+                            {t('users.userForm.phone')}
                         </Label>
                         <Input
                             id="phone"
                             className="col-span-3"
                             required
+                            placeholder={t('users.userForm.phonePlaceholder')}
                             value={phone}
                             onChange={(e) => setPhone(e.target.value)}
                         />
                     </div>
                     <div className="grid grid-cols-4 items-center gap-4">
                         <Label htmlFor="role" className="text-right">
-                            Role
+                            {t('users.userForm.role')}
                         </Label>
                         <div className="col-span-3">
                             <Select value={role} onValueChange={setRole}>
                                 <SelectTrigger>
-                                    <SelectValue placeholder="Select role" />
+                                    <SelectValue placeholder={t('users.userForm.selectRole')} />
                                 </SelectTrigger>
                                 <SelectContent>
                                     <SelectItem value="admin">Admin</SelectItem>
@@ -177,7 +182,7 @@ export const UserFormModal: React.FC<UserFormModalProps> = ({
                     </div>
                     <div className="grid grid-cols-4 items-center gap-4">
                         <Label htmlFor="password" className="text-right">
-                            Password
+                            {t('users.userForm.password')}
                         </Label>
                         <Input
                             id="password"
@@ -186,16 +191,16 @@ export const UserFormModal: React.FC<UserFormModalProps> = ({
                             required={!isEditing} // Password only required on creation
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
-                            placeholder={isEditing ? "(Unchanged)" : ""}
+                            placeholder={isEditing ? t('users.userForm.passwordPlaceholder') : ""}
                             minLength={6}
                         />
                     </div>
                     <DialogFooter>
                         <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={isPending}>
-                            Cancel
+                            {t('common.cancel')}
                         </Button>
                         <Button type="submit" disabled={isPending}>
-                            {isPending ? 'Saving...' : 'Save changes'}
+                            {isPending ? t('common.loading') : t('common.save')}
                         </Button>
                     </DialogFooter>
                 </form>

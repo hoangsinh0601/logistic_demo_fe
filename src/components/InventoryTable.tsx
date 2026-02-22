@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useGetProducts, useDeleteProduct } from '../hooks/useProducts';
 import type { Product } from '../types';
 import { useInventorySocket } from '../hooks/useInventorySocket';
@@ -22,10 +23,12 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { ProductFormModal } from './ProductFormModal';
+import { OrderForm } from './OrderForm';
 
 export const InventoryTable: React.FC = () => {
     const { data: products = [], isLoading, error } = useGetProducts();
     const deleteProduct = useDeleteProduct();
+    const { t } = useTranslation();
 
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
@@ -34,8 +37,8 @@ export const InventoryTable: React.FC = () => {
 
     const highlightedRow = latestUpdate?.product_id || null;
 
-    if (isLoading) return <div className="p-8">Loading Inventory...</div>;
-    if (error) return <div className="p-8 text-destructive">Error loading inventory</div>;
+    if (isLoading) return <div className="p-8">{t('common.loading')}</div>;
+    if (error) return <div className="p-8 text-destructive">{t('common.error')} loading inventory</div>;
 
     const handleCreateNew = () => {
         setSelectedProduct(null);
@@ -60,17 +63,20 @@ export const InventoryTable: React.FC = () => {
     return (
         <Card className="shadow-sm">
             <CardHeader className="pb-3 flex flex-row items-center justify-between">
-                <CardTitle className="text-xl">Stock Overview</CardTitle>
-                <Button onClick={handleCreateNew} size="sm">Add Product</Button>
+                <CardTitle className="text-xl">{t('inventory.title')}</CardTitle>
+                <div className="flex gap-2">
+                    <Button onClick={handleCreateNew} className="h-10 w-32">{t('inventory.addProduct')}</Button>
+                    <OrderForm />
+                </div>
             </CardHeader>
             <CardContent>
                 <Table>
                     <TableHeader>
                         <TableRow>
-                            <TableHead className="w-[100px]">SKU</TableHead>
-                            <TableHead>Product Name</TableHead>
-                            <TableHead>Price</TableHead>
-                            <TableHead className="text-right">Current Stock</TableHead>
+                            <TableHead className="w-[100px]">{t('inventory.columns.sku')}</TableHead>
+                            <TableHead>{t('inventory.columns.name')}</TableHead>
+                            <TableHead>{t('inventory.columns.price')}</TableHead>
+                            <TableHead className="text-right">{t('inventory.columns.stock')}</TableHead>
                             <TableHead className="w-[50px]"></TableHead>
                         </TableRow>
                     </TableHeader>
@@ -78,7 +84,7 @@ export const InventoryTable: React.FC = () => {
                         {products.length === 0 ? (
                             <TableRow>
                                 <TableCell colSpan={4} className="h-24 text-center">
-                                    No products found.
+                                    {t('common.noData')}
                                 </TableCell>
                             </TableRow>
                         ) : (
@@ -101,13 +107,13 @@ export const InventoryTable: React.FC = () => {
                                                 </Button>
                                             </DropdownMenuTrigger>
                                             <DropdownMenuContent align="end">
-                                                <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                                                <DropdownMenuLabel>{t('common.actions')}</DropdownMenuLabel>
                                                 <DropdownMenuItem onClick={() => handleEdit(product)}>
-                                                    <Pencil className="mr-2 h-4 w-4" /> Edit Product
+                                                    <Pencil className="mr-2 h-4 w-4" /> {t('common.edit')}
                                                 </DropdownMenuItem>
                                                 <DropdownMenuSeparator />
                                                 <DropdownMenuItem className="text-destructive focus:text-destructive" onClick={() => handleDelete(product.id)}>
-                                                    <Trash className="mr-2 h-4 w-4" /> Delete
+                                                    <Trash className="mr-2 h-4 w-4" /> {t('common.delete')}
                                                 </DropdownMenuItem>
                                             </DropdownMenuContent>
                                         </DropdownMenu>

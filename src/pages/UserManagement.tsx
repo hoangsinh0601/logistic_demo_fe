@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useGetUsers, useDeleteUser } from '@/hooks/useUsers';
 import type { User } from '@/types';
 import {
@@ -25,6 +26,7 @@ import { UserFormModal } from '@/components/UserFormModal';
 export const UserManagement: React.FC = () => {
     const [page, setPage] = useState(1);
     const limit = 10;
+    const { t } = useTranslation();
 
     const { data, isLoading, error } = useGetUsers(page, limit);
     const deleteUser = useDeleteUser();
@@ -32,8 +34,8 @@ export const UserManagement: React.FC = () => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedUser, setSelectedUser] = useState<User | null>(null);
 
-    if (isLoading) return <div className="p-8">Loading Users...</div>;
-    if (error) return <div className="p-8 text-destructive">Error loading users</div>;
+    if (isLoading) return <div className="p-8">{t('common.loading')}</div>;
+    if (error) return <div className="p-8 text-destructive">{t('common.error')}</div>;
 
     const users = data?.users || [];
     const total = data?.total || 0;
@@ -62,22 +64,22 @@ export const UserManagement: React.FC = () => {
     return (
         <div className="flex flex-col space-y-6">
             <div className="flex justify-between items-center">
-                <h1 className="text-3xl font-bold tracking-tight">User Management</h1>
+                <h1 className="text-3xl font-bold tracking-tight">{t('users.title')}</h1>
             </div>
 
             <Card className="shadow-sm">
                 <CardHeader className="pb-3 flex flex-row items-center justify-between">
-                    <CardTitle className="text-xl">System Users ({total})</CardTitle>
-                    <Button onClick={handleCreateNew} size="sm">Add User</Button>
+                    <CardTitle className="text-xl">{t('users.systemUsers', { total })}</CardTitle>
+                    <Button onClick={handleCreateNew} size="sm">{t('users.addUser')}</Button>
                 </CardHeader>
                 <CardContent>
                     <Table>
                         <TableHeader>
                             <TableRow>
-                                <TableHead>Username</TableHead>
-                                <TableHead>Email</TableHead>
-                                <TableHead>Phone</TableHead>
-                                <TableHead>Role</TableHead>
+                                <TableHead>{t('users.columns.username')}</TableHead>
+                                <TableHead>{t('users.columns.email')}</TableHead>
+                                <TableHead>{t('users.columns.phone')}</TableHead>
+                                <TableHead>{t('users.columns.role')}</TableHead>
                                 <TableHead className="w-[50px]"></TableHead>
                             </TableRow>
                         </TableHeader>
@@ -85,7 +87,7 @@ export const UserManagement: React.FC = () => {
                             {users.length === 0 ? (
                                 <TableRow>
                                     <TableCell colSpan={5} className="h-24 text-center">
-                                        No users found.
+                                        {t('common.noData')}
                                     </TableCell>
                                 </TableRow>
                             ) : (
@@ -108,13 +110,13 @@ export const UserManagement: React.FC = () => {
                                                     </Button>
                                                 </DropdownMenuTrigger>
                                                 <DropdownMenuContent align="end">
-                                                    <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                                                    <DropdownMenuLabel>{t('common.actions')}</DropdownMenuLabel>
                                                     <DropdownMenuItem onClick={() => handleEdit(user)}>
-                                                        <Pencil className="mr-2 h-4 w-4" /> Edit User
+                                                        <Pencil className="mr-2 h-4 w-4" /> {t('common.edit')}
                                                     </DropdownMenuItem>
                                                     <DropdownMenuSeparator />
                                                     <DropdownMenuItem className="text-destructive focus:text-destructive" onClick={() => handleDelete(user.id)}>
-                                                        <Trash className="mr-2 h-4 w-4" /> Delete
+                                                        <Trash className="mr-2 h-4 w-4" /> {t('common.delete')}
                                                     </DropdownMenuItem>
                                                 </DropdownMenuContent>
                                             </DropdownMenu>
@@ -134,10 +136,10 @@ export const UserManagement: React.FC = () => {
                                 onClick={() => setPage(p => Math.max(1, p - 1))}
                                 disabled={page === 1}
                             >
-                                Previous
+                                {t('common.previous')}
                             </Button>
                             <div className="text-sm text-muted-foreground w-20 text-center">
-                                Page {page} of {totalPages}
+                                {t('common.page')} {page} / {totalPages}
                             </div>
                             <Button
                                 variant="outline"
@@ -145,7 +147,7 @@ export const UserManagement: React.FC = () => {
                                 onClick={() => setPage(p => Math.min(totalPages, p + 1))}
                                 disabled={page === totalPages}
                             >
-                                Next
+                                {t('common.next')}
                             </Button>
                         </div>
                     )}

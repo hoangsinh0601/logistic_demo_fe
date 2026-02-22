@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import {
     Dialog,
@@ -25,6 +26,7 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
     product,
 }) => {
     const isEditing = !!product;
+    const { t } = useTranslation();
 
     const [sku, setSku] = useState('');
     const [name, setName] = useState('');
@@ -42,9 +44,9 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
             if (isEditing && product) {
                 // eslint-disable-next-line react-hooks/set-state-in-effect
                 setSku(product.sku);
-                 
+
                 setName(product.name);
-                 
+
                 setPrice(product.price);
             } else {
                 setSku('');
@@ -85,7 +87,7 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent className="sm:max-w-[425px]">
                 <DialogHeader>
-                    <DialogTitle>{isEditing ? 'Edit Product' : 'Create Product'}</DialogTitle>
+                    <DialogTitle>{isEditing ? t('inventory.productForm.editTitle') : t('inventory.productForm.createTitle')}</DialogTitle>
                     <DialogDescription>
                         {isEditing
                             ? "Update product details. Changing SKU might affect external integrations."
@@ -102,31 +104,33 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
                 <form onSubmit={handleSubmit} className="space-y-4 py-4">
                     <div className="grid grid-cols-4 items-center gap-4">
                         <Label htmlFor="sku" className="text-right">
-                            SKU
+                            {t('inventory.productForm.sku')}
                         </Label>
                         <Input
                             id="sku"
                             className="col-span-3"
                             required
+                            placeholder={t('inventory.productForm.skuPlaceholder')}
                             value={sku}
                             onChange={(e) => setSku(e.target.value)}
                         />
                     </div>
                     <div className="grid grid-cols-4 items-center gap-4">
                         <Label htmlFor="name" className="text-right">
-                            Name
+                            {t('inventory.productForm.name')}
                         </Label>
                         <Input
                             id="name"
                             className="col-span-3"
                             required
+                            placeholder={t('inventory.productForm.namePlaceholder')}
                             value={name}
                             onChange={(e) => setName(e.target.value)}
                         />
                     </div>
                     <div className="grid grid-cols-4 items-center gap-4">
                         <Label htmlFor="price" className="text-right">
-                            Price
+                            {t('inventory.productForm.price')}
                         </Label>
                         <Input
                             id="price"
@@ -141,10 +145,10 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
                     </div>
                     <DialogFooter>
                         <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={isPending}>
-                            Cancel
+                            {t('common.cancel')}
                         </Button>
                         <Button type="submit" disabled={isPending}>
-                            {isPending ? 'Saving...' : 'Save changes'}
+                            {isPending ? t('common.loading') : t('common.save')}
                         </Button>
                     </DialogFooter>
                 </form>

@@ -1,0 +1,139 @@
+{
+  "common": {
+    "loading": "Đang tải...",
+    "cancel": "Hủy",
+    "save": "Lưu",
+    "submit": "Gửi",
+    "delete": "Xóa",
+    "edit": "Chỉnh sửa",
+    "actions": "Thao tác",
+    "error": "Lỗi",
+    "success": "Thành công",
+    "yes": "Có",
+    "no": "Không",
+    "confirm": "Xác nhận",
+    "search": "Tìm kiếm...",
+    "noData": "Không có dữ liệu."
+  },
+  "sidebar": {
+    "dashboard": "Bảng Điều Khiển",
+    "auditHistory": "Lịch Sử Hoạt Động",
+    "users": "Quản Lý Người Dùng",
+    "logout": "Đăng Xuất"
+  },
+  "auth": {
+    "login": {
+      "title": "Chào Mừng Trở Lại",
+      "subtitle": "Đăng nhập vào tài khoản của bạn để tiếp tục",
+      "username": "Tên đăng nhập",
+      "password": "Mật khẩu",
+      "button": "Đăng Nhập",
+      "loading": "Đang đăng nhập...",
+      "registerPrompt": "Chưa có tài khoản?",
+      "registerLink": "Đăng ký tại đây"
+    },
+    "register": {
+      "title": "Tạo Tài Khoản",
+      "subtitle": "Đăng ký để bắt đầu",
+      "username": "Tên đăng nhập",
+      "password": "Mật khẩu",
+      "button": "Đăng Ký",
+      "loading": "Đang tạo tài khoản...",
+      "loginPrompt": "Đã có tài khoản?",
+      "loginLink": "Đăng nhập"
+    }
+  },
+  "dashboard": {
+    "title": "Bảng Điều Khiển Kho"
+  },
+  "inventory": {
+    "title": "Tổng Quan Kho Hàng",
+    "addProduct": "Thêm Sản Phẩm",
+    "columns": {
+      "sku": "Mã SKU",
+      "name": "Tên Sản Phẩm",
+      "stock": "Tồn Kho",
+      "price": "Giá"
+    },
+    "productForm": {
+      "createTitle": "Tạo Sản Phẩm",
+      "editTitle": "Sửa Sản Phẩm",
+      "sku": "Mã SKU",
+      "skuPlaceholder": "VD: LAP-001",
+      "name": "Tên Sản Phẩm",
+      "namePlaceholder": "VD: MacBook Pro",
+      "price": "Đơn Giá ($)",
+      "creating": "Đang tạo...",
+      "updating": "Đang cập nhật..."
+    }
+  },
+  "orders": {
+    "createTitle": "Tạo Đơn Hàng Mới",
+    "subtitle": "Thêm sản phẩm để nhập hoặc xuất kho",
+    "type": "Loại Đơn Hàng",
+    "typeImport": "Nhập Kho (In)",
+    "typeExport": "Xuất Kho (Out)",
+    "note": "Ghi chú (Tùy chọn)",
+    "notePlaceholder": "Thêm ghi chú...",
+    "items": "Danh sách sản phẩm",
+    "addItem": "Thêm Sản Phẩm",
+    "product": "Sản phẩm",
+    "chooseProduct": "--- Chọn Sản Phẩm ---",
+    "stock": "Tồn",
+    "quantity": "Số Lượng",
+    "unitPrice": "Đơn Giá ($)",
+    "totalValue": "Ước tính Tổng Giá Trị:",
+    "submitting": "Đang gửi...",
+    "submitButton": "Gửi Đơn Hàng",
+    "submitCount": "Gửi Đơn Hàng ({{count}} sản phẩm)"
+  },
+  "audit": {
+    "title": "Lịch Sử Hoạt Động",
+    "subtitle": "Bản ghi chi tiết tất cả sự kiện và giao dịch hệ thống.",
+    "columns": {
+      "timestamp": "Thời gian",
+      "user": "Người Dùng",
+      "action": "Hành Động",
+      "object": "Đối Tượng",
+      "details": "Chi tiết",
+      "id": "ID",
+      "name": "Tên"
+    },
+    "actionTags": {
+      "product": "Sản Phẩm",
+      "order": "Đơn Hàng",
+      "user": "Người Dùng"
+    },
+    "dialog": {
+      "title": "Chi Tiết Nhật Ký Hệ Thống",
+      "timestamp": "Thời gian",
+      "user": "Người dùng",
+      "actionType": "Loại Hành Động",
+      "entityId": "ID Đối Tượng",
+      "entityName": "Tên Đối Tượng",
+      "rawPayload": "Dữ Liệu Thô JSON"
+    }
+  },
+  "users": {
+    "title": "Quản Lý Người Dùng",
+    "subtitle": "Quản lý quyền truy cập, vai trò và hồ sơ thành viên trong hệ thống.",
+    "addUser": "Thêm Người Dùng",
+    "columns": {
+      "username": "Tên đăng nhập",
+      "role": "Vai trò",
+      "joined": "Ngày Tham Gia"
+    },
+    "userForm": {
+      "createTitle": "Tạo Người Dùng",
+      "editTitle": "Sửa Hồ Sơ",
+      "username": "Tên đăng nhập",
+      "password": "Mật khẩu",
+      "passwordPlaceholder": "Bỏ trống để giữ nguyên",
+      "role": "Vai trò",
+      "roleAdmin": "Quản trị viên (Admin)",
+      "roleStaff": "Nhân viên (Staff)",
+      "creating": "Đang tạo...",
+      "updating": "Đang lưu..."
+    }
+  }
+}

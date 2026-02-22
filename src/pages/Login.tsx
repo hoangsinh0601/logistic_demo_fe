@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { api } from '../api/api';
 import { useAuth } from '../context/AuthContext';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
@@ -16,6 +17,7 @@ export const Login: React.FC = () => {
 
     const navigate = useNavigate();
     const { login } = useAuth();
+    const { t } = useTranslation();
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -53,9 +55,9 @@ export const Login: React.FC = () => {
         <div className="flex flex-col items-center justify-center min-h-screen bg-muted/40 p-4">
             <Card className="w-full max-w-sm shadow-lg">
                 <CardHeader className="space-y-1 text-center">
-                    <CardTitle className="text-2xl font-bold tracking-tight">System Login</CardTitle>
+                    <CardTitle className="text-2xl font-bold tracking-tight">{t('auth.login.title')}</CardTitle>
                     <CardDescription>
-                        Enter your email and password to access the dashboard
+                        {t('auth.login.subtitle')}
                     </CardDescription>
                 </CardHeader>
                 <form onSubmit={handleSubmit}>
@@ -78,7 +80,7 @@ export const Login: React.FC = () => {
                             />
                         </div>
                         <div className="space-y-2">
-                            <Label htmlFor="password">Password</Label>
+                            <Label htmlFor="password">{t('auth.login.password')}</Label>
                             <Input
                                 id="password"
                                 type="password"
@@ -94,7 +96,7 @@ export const Login: React.FC = () => {
                             className="w-full"
                             disabled={loading}
                         >
-                            {loading ? 'Logging in...' : 'Login'}
+                            {loading ? t('auth.login.loading') : t('auth.login.button')}
                         </Button>
                     </CardFooter>
                 </form>

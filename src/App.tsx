@@ -3,6 +3,7 @@ import { AuthProvider } from './context/AuthContext';
 import { Login } from './pages/Login';
 import { Dashboard } from './pages/Dashboard';
 import { UserManagement } from './pages/UserManagement';
+import { AuditHistory } from './pages/AuditHistory';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { AdminRoute } from './components/AdminRoute';
 import { MainLayout } from './components/MainLayout';
@@ -28,6 +29,7 @@ function App() {
                 {/* Admin only routes */}
                 <Route element={<AdminRoute />}>
                   <Route path="/users" element={<UserManagement />} />
+                  <Route path="/history" element={<AuditHistory />} />
                 </Route>
               </Route>
             </Route>

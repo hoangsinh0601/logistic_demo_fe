@@ -13,8 +13,8 @@ export const AdminRoute: React.FC = () => {
         return <Navigate to="/login" replace />;
     }
 
-    if (user?.role !== 'admin') {
-        // Redir to main dashboard if not an admin
+    if (user?.role !== 'admin' && user?.role !== 'manager') {
+        // Redir to main dashboard if not an admin or manager
         return <Navigate to="/dashboard" replace />;
     }
 

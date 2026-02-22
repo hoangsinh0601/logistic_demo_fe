@@ -1,0 +1,139 @@
+{
+  "common": {
+    "loading": "Loading...",
+    "cancel": "Cancel",
+    "save": "Save",
+    "submit": "Submit",
+    "delete": "Delete",
+    "edit": "Edit",
+    "actions": "Actions",
+    "error": "Error",
+    "success": "Success",
+    "yes": "Yes",
+    "no": "No",
+    "confirm": "Confirm",
+    "search": "Search...",
+    "noData": "No data available."
+  },
+  "sidebar": {
+    "dashboard": "Dashboard",
+    "auditHistory": "Audit History",
+    "users": "Users Management",
+    "logout": "Logout"
+  },
+  "auth": {
+    "login": {
+      "title": "Welcome Back",
+      "subtitle": "Sign in to your account to continue",
+      "username": "Username",
+      "password": "Password",
+      "button": "Sign In",
+      "loading": "Signing in...",
+      "registerPrompt": "Don't have an account?",
+      "registerLink": "Register here"
+    },
+    "register": {
+      "title": "Create Account",
+      "subtitle": "Sign up to get started",
+      "username": "Username",
+      "password": "Password",
+      "button": "Sign Up",
+      "loading": "Creating account...",
+      "loginPrompt": "Already have an account?",
+      "loginLink": "Sign in"
+    }
+  },
+  "dashboard": {
+    "title": "Inventory Dashboard"
+  },
+  "inventory": {
+    "title": "Stock Overview",
+    "addProduct": "Add Product",
+    "columns": {
+      "sku": "SKU",
+      "name": "Product Name",
+      "stock": "Current Stock",
+      "price": "Price"
+    },
+    "productForm": {
+      "createTitle": "Create Product",
+      "editTitle": "Edit Product",
+      "sku": "SKU",
+      "skuPlaceholder": "e.g., LAP-001",
+      "name": "Product Name",
+      "namePlaceholder": "e.g., MacBook Pro",
+      "price": "Unit Price ($)",
+      "creating": "Creating...",
+      "updating": "Updating..."
+    }
+  },
+  "orders": {
+    "createTitle": "Create New Order",
+    "subtitle": "Add items to import or export stock",
+    "type": "Order Type",
+    "typeImport": "Import Stock (In)",
+    "typeExport": "Export Stock (Out)",
+    "note": "Note (Optional)",
+    "notePlaceholder": "Add a note...",
+    "items": "Order Items",
+    "addItem": "Add Item",
+    "product": "Product",
+    "chooseProduct": "--- Choose Product ---",
+    "stock": "Stock",
+    "quantity": "Quantity",
+    "unitPrice": "Unit Price ($)",
+    "totalValue": "Estimated Total Value:",
+    "submitting": "Submitting...",
+    "submitButton": "Submit Order",
+    "submitCount": "Submit Order ({{count}} items)"
+  },
+  "audit": {
+    "title": "Audit History Map",
+    "subtitle": "Detailed record of all system events and transactions.",
+    "columns": {
+      "timestamp": "Timestamp",
+      "user": "User",
+      "action": "Action",
+      "object": "Object",
+      "details": "Details",
+      "id": "ID",
+      "name": "Name"
+    },
+    "actionTags": {
+      "product": "Product",
+      "order": "Order",
+      "user": "User"
+    },
+    "dialog": {
+      "title": "Audit Log Details",
+      "timestamp": "Timestamp",
+      "user": "User",
+      "actionType": "Action Type",
+      "entityId": "Entity ID",
+      "entityName": "Entity Name",
+      "rawPayload": "Raw Payload"
+    }
+  },
+  "users": {
+    "title": "User Management",
+    "subtitle": "Manage member access, roles, and profiles within the system.",
+    "addUser": "Add User",
+    "columns": {
+      "username": "Username",
+      "role": "Role",
+      "joined": "Joined"
+    },
+    "userForm": {
+      "createTitle": "Create User",
+      "editTitle": "Edit Profile",
+      "username": "Username",
+      "password": "Password",
+      "passwordPlaceholder": "Leave blank to keep current",
+      "role": "Role",
+      "roleAdmin": "Admin",
+      "roleStaff": "Staff",
+      "creating": "Creating...",
+      "updating": "Saving..."
+    }
+  }
+}
