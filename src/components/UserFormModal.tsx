@@ -37,7 +37,7 @@ export const UserFormModal: React.FC<UserFormModalProps> = ({
     const [email, setEmail] = useState('');
     const [phone, setPhone] = useState('');
     const [password, setPassword] = useState('');
-    const [role, setRole] = useState('nhân viên');
+    const [role, setRole] = useState('staff');
 
     const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
@@ -51,19 +51,19 @@ export const UserFormModal: React.FC<UserFormModalProps> = ({
             if (isEditing && user) {
                 // eslint-disable-next-line react-hooks/set-state-in-effect
                 setUsername(user.username);
-                 
+
                 setEmail(user.email);
-                 
+
                 setPhone(user.phone || '');
-                 
+
                 setRole(user.role);
-                 
+
                 setPassword(''); // Always clear password on edit load
             } else {
                 setUsername('');
                 setEmail('');
                 setPhone('');
-                setRole('nhân viên');
+                setRole('staff');
                 setPassword('');
             }
             setErrorMsg(null);
@@ -169,8 +169,8 @@ export const UserFormModal: React.FC<UserFormModalProps> = ({
                                 </SelectTrigger>
                                 <SelectContent>
                                     <SelectItem value="admin">Admin</SelectItem>
-                                    <SelectItem value="quản lý">Quản Lý</SelectItem>
-                                    <SelectItem value="nhân viên">Nhân Viên</SelectItem>
+                                    <SelectItem value="manager">Manager</SelectItem>
+                                    <SelectItem value="staff">Staff</SelectItem>
                                 </SelectContent>
                             </Select>
                         </div>
