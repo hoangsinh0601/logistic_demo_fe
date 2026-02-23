@@ -15,6 +15,7 @@ interface NavItem {
 
 const NAV_ITEMS: NavItem[] = [
     { to: '/dashboard', labelKey: 'sidebar.dashboard', icon: LayoutDashboard },
+    { to: '/inventory', labelKey: 'sidebar.inventory', icon: Package },
     { to: '/users', labelKey: 'sidebar.users', icon: Users, roles: ['admin'] },
     { to: '/history', labelKey: 'sidebar.auditHistory', icon: History, roles: ['admin', 'manager'] },
 ];

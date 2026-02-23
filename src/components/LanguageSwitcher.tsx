@@ -10,6 +10,7 @@ export const LanguageSwitcher: React.FC = () => {
     const currentLanguage = i18n.language || window.localStorage.i18nextLng || 'en';
 
     const changeLanguage = (lng: string) => {
+        localStorage.setItem('i18nextLng', lng);
         i18n.changeLanguage(lng);
     };
 

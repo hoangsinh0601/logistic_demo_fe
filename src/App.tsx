@@ -2,6 +2,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { AuthProvider } from './context/AuthContext';
 import { Login } from './pages/Login';
 import { Dashboard } from './pages/Dashboard';
+import { Inventory } from './pages/Inventory';
 import { UserManagement } from './pages/UserManagement';
 import { AuditHistory } from './pages/AuditHistory';
 import { ProtectedRoute } from './components/ProtectedRoute';
@@ -25,11 +26,12 @@ function App() {
             <Route element={<ProtectedRoute />}>
               <Route element={<MainLayout />}>
                 <Route path="/dashboard" element={<Dashboard />} />
+                <Route path="/inventory" element={<Inventory />} />
+                <Route path="/history" element={<AuditHistory />} />
 
                 {/* Admin only routes */}
                 <Route element={<AdminRoute />}>
                   <Route path="/users" element={<UserManagement />} />
-                  <Route path="/history" element={<AuditHistory />} />
                 </Route>
               </Route>
             </Route>

@@ -13,10 +13,12 @@
     "no": "Không",
     "confirm": "Xác nhận",
     "search": "Tìm kiếm...",
-    "noData": "Không có dữ liệu."
+    "noData": "Không có dữ liệu.",
+    "totalValue": "Tổng Giá Trị"
   },
   "sidebar": {
     "dashboard": "Bảng Điều Khiển",
+    "inventory": "Kho Hàng",
     "auditHistory": "Lịch Sử Hoạt Động",
     "users": "Quản Lý Người Dùng",
     "logout": "Đăng Xuất"
@@ -46,13 +48,29 @@
   "dashboard": {
     "title": "Bảng Điều Khiển Kho"
   },
+  "statistics": {
+    "totalImport": "Tổng Tiền Nhập Hàng",
+    "totalExport": "Tổng Tiền Xuất Hàng",
+    "profit": "Lợi Nhuận",
+    "topImported": "Xếp Hạng Nhập Hàng",
+    "topImportedDesc": "Top 5 Sản phẩm có số lượng nhập kho nhiều nhất",
+    "topExported": "Xếp Hạng Xuất Hàng",
+    "topExportedDesc": "Top 5 Sản phẩm xuất kho bán chạy nhất",
+    "selectTimeRange": "Chọn thời gian",
+    "week": "Tuần",
+    "month": "Tháng",
+    "quarter": "Quý",
+    "year": "Năm"
+  },
   "inventory": {
     "title": "Tổng Quan Kho Hàng",
     "addProduct": "Thêm Sản Phẩm",
     "columns": {
       "sku": "Mã SKU",
       "name": "Tên Sản Phẩm",
+      "productName": "Tên Sản Phẩm",
       "stock": "Tồn Kho",
+      "currentStock": "Số lượng",
       "price": "Giá"
     },
     "productForm": {
@@ -90,7 +108,10 @@
   "audit": {
     "title": "Lịch Sử Hoạt Động",
     "subtitle": "Bản ghi chi tiết tất cả sự kiện và giao dịch hệ thống.",
+    "history": "Lịch sử",
+    "description": "Hiển thị {{total}} bản ghi nhật ký hệ thống",
     "columns": {
+      "time": "Thời gian",
       "timestamp": "Thời gian",
       "user": "Người Dùng",
       "action": "Hành Động",
@@ -106,20 +127,27 @@
     },
     "dialog": {
       "title": "Chi Tiết Nhật Ký Hệ Thống",
+      "subtitle": "Chi tiết hành động {{action}} của người dùng {{user}}",
+      "time": "Thời gian",
+      "action": "Hành động",
       "timestamp": "Thời gian",
       "user": "Người dùng",
       "actionType": "Loại Hành Động",
       "entityId": "ID Đối Tượng",
       "entityName": "Tên Đối Tượng",
+      "payload": "Dữ liệu (Payload)",
       "rawPayload": "Dữ Liệu Thô JSON"
     }
   },
   "users": {
     "title": "Quản Lý Người Dùng",
     "subtitle": "Quản lý quyền truy cập, vai trò và hồ sơ thành viên trong hệ thống.",
+    "systemUsers": "Người dùng hệ thống ({{total}})",
     "addUser": "Thêm Người Dùng",
     "columns": {
       "username": "Tên đăng nhập",
+      "email": "Email",
+      "phone": "Số điện thoại",
       "role": "Vai trò",
       "joined": "Ngày Tham Gia"
     },
@@ -127,6 +155,10 @@
       "createTitle": "Tạo Người Dùng",
       "editTitle": "Sửa Hồ Sơ",
       "username": "Tên đăng nhập",
+      "email": "Email",
+      "emailPlaceholder": "Nhập email",
+      "phone": "Số điện thoại",
+      "phonePlaceholder": "Nhập số điện thoại",
       "password": "Mật khẩu",
       "passwordPlaceholder": "Bỏ trống để giữ nguyên",
       "role": "Vai trò",

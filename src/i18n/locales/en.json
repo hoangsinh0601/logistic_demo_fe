@@ -13,10 +13,12 @@
     "no": "No",
     "confirm": "Confirm",
     "search": "Search...",
-    "noData": "No data available."
+    "noData": "No data available.",
+    "totalValue": "Total Value"
   },
   "sidebar": {
     "dashboard": "Dashboard",
+    "inventory": "Inventory",
     "auditHistory": "Audit History",
     "users": "Users Management",
     "logout": "Logout"
@@ -46,13 +48,29 @@
   "dashboard": {
     "title": "Inventory Dashboard"
   },
+  "statistics": {
+    "totalImport": "Total Import Value",
+    "totalExport": "Total Export Value",
+    "profit": "Profit",
+    "topImported": "Top Imported Items",
+    "topImportedDesc": "Top 5 items with the highest import quantity",
+    "topExported": "Top Exported Items",
+    "topExportedDesc": "Top 5 best-selling items by export quantity",
+    "selectTimeRange": "Select time range",
+    "week": "This Week",
+    "month": "This Month",
+    "quarter": "This Quarter",
+    "year": "This Year"
+  },
   "inventory": {
     "title": "Stock Overview",
     "addProduct": "Add Product",
     "columns": {
       "sku": "SKU",
       "name": "Product Name",
+      "productName": "Product Name",
       "stock": "Current Stock",
+      "currentStock": "Stock",
       "price": "Price"
     },
     "productForm": {
@@ -90,7 +108,10 @@
   "audit": {
     "title": "Audit History Map",
     "subtitle": "Detailed record of all system events and transactions.",
+    "history": "History",
+    "description": "Showing {{total}} audit logs",
     "columns": {
+      "time": "Time",
       "timestamp": "Timestamp",
       "user": "User",
       "action": "Action",
@@ -106,20 +127,27 @@
     },
     "dialog": {
       "title": "Audit Log Details",
+      "subtitle": "Details for action {{action}} by user {{user}}",
+      "time": "Time",
+      "action": "Action",
       "timestamp": "Timestamp",
       "user": "User",
       "actionType": "Action Type",
       "entityId": "Entity ID",
       "entityName": "Entity Name",
+      "payload": "Payload",
       "rawPayload": "Raw Payload"
     }
   },
   "users": {
     "title": "User Management",
     "subtitle": "Manage member access, roles, and profiles within the system.",
+    "systemUsers": "System Users ({{total}})",
     "addUser": "Add User",
     "columns": {
       "username": "Username",
+      "email": "Email",
+      "phone": "Phone",
       "role": "Role",
       "joined": "Joined"
     },
@@ -127,6 +155,10 @@
       "createTitle": "Create User",
       "editTitle": "Edit Profile",
       "username": "Username",
+      "email": "Email",
+      "emailPlaceholder": "Enter email",
+      "phone": "Phone",
+      "phonePlaceholder": "Enter phone number",
       "password": "Password",
       "passwordPlaceholder": "Leave blank to keep current",
       "role": "Role",
