@@ -1,51 +1,39 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useGetAuditLogs, type AuditLog } from '@/hooks/useAuditLogs';
-import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
-} from '@/components/ui/table';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/atoms/card';
+import { Button } from '@/components/atoms/button';
 import {
     Dialog,
     DialogContent,
     DialogDescription,
     DialogHeader,
     DialogTitle,
-} from '@/components/ui/dialog';
+} from '@/components/atoms/dialog';
 import { Eye } from 'lucide-react';
+import { DataTable, usePagination } from '@/components/molecules/DataTable';
+import type { ColumnDef } from '@/components/molecules/DataTable';
 
 export const AuditHistory: React.FC = () => {
-    const [page, setPage] = useState(1);
     const [selectedLog, setSelectedLog] = useState<AuditLog | null>(null);
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const { t, i18n } = useTranslation();
-
-    const limit = 20;
+    const { page, limit, setPage, setLimit } = usePagination(10);
 
     const { data, isLoading, error } = useGetAuditLogs(page, limit);
 
     if (isLoading) return <div className="p-8 animate-pulse text-muted-foreground">{t('common.loading')}</div>;
     if (error) return <div className="p-8 text-destructive">{t('common.error')}</div>;
 
-    // Use type asserting for the generic data layout bridging the dynamic keys safely
     const responseData = data as unknown as { logs: AuditLog[], total: number };
     const logs = responseData?.logs || [];
     const total = responseData?.total || 0;
-    const totalPages = Math.ceil(total / limit);
 
     const formatActionBadge = (action: string) => {
         let colorClass = "bg-secondary text-secondary-foreground";
-
         if (action.includes("CREATE")) colorClass = "bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-400";
         if (action.includes("UPDATE")) colorClass = "bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-400";
         if (action.includes("DELETE")) colorClass = "bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-400";
-
         return (
             <span className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold uppercase tracking-wider ${colorClass}`}>
                 {action.replace(/_/g, " ")}
@@ -55,7 +43,6 @@ export const AuditHistory: React.FC = () => {
 
     const formatDate = (dateString: string) => {
         try {
-            // Append Z if no timezone information is present
             const safeDateString = dateString.includes('Z') || dateString.includes('+') ? dateString : `${dateString}Z`;
             const date = new Date(safeDateString);
             return new Intl.DateTimeFormat(i18n.language === 'en' ? 'en-US' : 'vi-VN', {
@@ -85,6 +72,63 @@ export const AuditHistory: React.FC = () => {
         setIsDialogOpen(true);
     };
 
+    const columns: ColumnDef<AuditLog>[] = [
+        {
+            key: 'time',
+            headerKey: 'audit.columns.time',
+            headerClassName: 'w-[180px]',
+            className: 'font-medium text-muted-foreground whitespace-nowrap',
+            render: (log) => formatDate(log.created_at),
+        },
+        {
+            key: 'user',
+            headerKey: 'audit.columns.user',
+            headerClassName: 'w-[150px]',
+            className: 'font-semibold text-primary',
+            render: (log) => log.username,
+        },
+        {
+            key: 'action',
+            headerKey: 'audit.columns.action',
+            headerClassName: 'w-[200px]',
+            render: (log) => formatActionBadge(log.action),
+        },
+        {
+            key: 'entityId',
+            headerKey: 'audit.columns.id',
+            headerClassName: 'w-[200px]',
+            className: 'max-w-[200px]',
+            render: (log) => (
+                <div className="text-xs text-muted-foreground font-mono truncate" title={log.entity_id}>
+                    ID: {log.entity_id}
+                </div>
+            ),
+        },
+        {
+            key: 'entityName',
+            headerKey: 'audit.columns.name',
+            headerClassName: 'w-[200px]',
+            className: 'max-w-[200px]',
+            render: (log) => (
+                <div className="font-mono truncate" title={log.entity_name}>
+                    {log.entity_name}
+                </div>
+            ),
+        },
+        {
+            key: 'details',
+            headerKey: 'audit.columns.details',
+            headerClassName: 'text-center w-[120px]',
+            className: 'text-center',
+            render: (log) => (
+                <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={() => handleViewDetails(log)}>
+                    <Eye className="h-4 w-4" />
+                    <span className="sr-only">{t('common.details')}</span>
+                </Button>
+            ),
+        },
+    ];
+
     return (
         <div className="flex flex-col space-y-6">
             <div className="flex justify-between items-center">
@@ -97,89 +141,19 @@ export const AuditHistory: React.FC = () => {
                     <CardDescription>{t('audit.description', { total })}</CardDescription>
                 </CardHeader>
                 <CardContent>
-                    <div className="rounded-md border">
-                        <Table>
-                            <TableHeader className="bg-muted/50">
-                                <TableRow>
-                                    <TableHead className="w-[180px]">{t('audit.columns.time')}</TableHead>
-                                    <TableHead className="w-[150px]">{t('audit.columns.user')}</TableHead>
-                                    <TableHead className="w-[200px]">{t('audit.columns.action')}</TableHead>
-                                    <TableHead className="w-[200px]">{t('audit.columns.id')}</TableHead>
-                                    <TableHead className="w-[200px]">{t('audit.columns.name')}</TableHead>
-                                    <TableHead className="text-center w-[120px]">{t('audit.columns.details')}</TableHead>
-                                </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                                {logs.length === 0 ? (
-                                    <TableRow>
-                                        <TableCell colSpan={6} className="h-24 text-center">
-                                            {t('common.noData')}
-                                        </TableCell>
-                                    </TableRow>
-                                ) : (
-                                    logs.map((log: AuditLog) => (
-                                        <TableRow key={log.id}>
-                                            <TableCell className="font-medium text-muted-foreground whitespace-nowrap">
-                                                {formatDate(log.created_at)}
-                                            </TableCell>
-                                            <TableCell className="font-semibold text-primary">
-                                                {log.username}
-                                            </TableCell>
-                                            <TableCell>
-                                                {formatActionBadge(log.action)}
-                                            </TableCell>
-                                            <TableCell className="max-w-[200px]">
-                                                <div className="text-xs text-muted-foreground font-mono truncate" title={log.entity_id}>
-                                                    ID: {log.entity_id}
-                                                </div>
-                                            </TableCell>
-                                            <TableCell className="max-w-[200px]">
-                                                <div className="font-mono truncate" title={log.entity_name}>
-                                                    {log.entity_name}
-                                                </div>
-                                            </TableCell>
-                                            <TableCell className="text-center">
-                                                <Button
-                                                    variant="ghost"
-                                                    size="sm"
-                                                    className="h-8 w-8 p-0"
-                                                    onClick={() => handleViewDetails(log)}
-                                                >
-                                                    <Eye className="h-4 w-4" />
-                                                    <span className="sr-only">{t('common.details')}</span>
-                                                </Button>
-                                            </TableCell>
-                                        </TableRow>
-                                    ))
-                                )}
-                            </TableBody>
-                        </Table>
-                    </div>
-
-                    {/* Pagination Controls */}
-                    {totalPages > 1 && (
-                        <div className="flex items-center justify-end space-x-2 py-4">
-                            <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => setPage(p => Math.max(1, p - 1))}
-                                disabled={page === 1}
-                            >
-                                {t('common.previous')}
-                            </Button>
-                            <div className="text-sm text-muted-foreground w-20 text-center">
-                                {t('common.page')} {page} / {totalPages}
-                            </div>
-                            <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => setPage(p => Math.min(totalPages, p + 1))}
-                                disabled={page === totalPages}
-                            >
-                                {t('common.next')}
-                            </Button>
-                        </div>
-                    )}
+                    <DataTable<AuditLog>
+                        columns={columns}
+                        data={logs}
+                        rowKey={(log) => log.id}
+                        headerClassName="bg-muted/50"
+                        pagination={{
+                            page,
+                            limit,
+                            total,
+                            onPageChange: setPage,
+                            onLimitChange: setLimit,
+                        }}
+                    />
                 </CardContent>
             </Card>
 

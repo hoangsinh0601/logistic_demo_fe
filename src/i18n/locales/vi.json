@@ -14,7 +14,13 @@
     "confirm": "Xác nhận",
     "search": "Tìm kiếm...",
     "noData": "Không có dữ liệu.",
-    "totalValue": "Tổng Giá Trị"
+    "totalValue": "Tổng Giá Trị",
+    "previous": "Trước",
+    "next": "Sau",
+    "page": "Trang",
+    "details": "Chi tiết",
+    "rowsPerPage": "Số dòng mỗi trang:",
+    "showing": "{{from}}-{{to}} trên {{total}}"
   },
   "sidebar": {
     "dashboard": "Bảng Điều Khiển",
@@ -167,10 +173,12 @@
       "password": "Mật khẩu",
       "passwordPlaceholder": "Bỏ trống để giữ nguyên",
       "role": "Vai trò",
+      "selectRole": "Chọn vai trò",
       "roleAdmin": "Quản trị viên (Admin)",
       "roleStaff": "Nhân viên (Staff)",
       "creating": "Đang tạo...",
-      "updating": "Đang lưu..."
+      "updating": "Đang lưu...",
+      "usernamePlaceholder": "Nhập tên đăng nhập"
     }
   }
 }

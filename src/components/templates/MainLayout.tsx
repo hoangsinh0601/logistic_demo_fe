@@ -1,10 +1,10 @@
 import React from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../../context/AuthContext';
 import { useTranslation } from 'react-i18next';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/atoms/button';
 import { Users, LayoutDashboard, LogOut, Package, History } from 'lucide-react';
-import { LanguageSwitcher } from './LanguageSwitcher';
+import { LanguageSwitcher } from '../molecules/LanguageSwitcher';
 
 interface NavItem {
     to: string;
@@ -14,10 +14,10 @@ interface NavItem {
 }
 
 const NAV_ITEMS: NavItem[] = [
-    { to: '/dashboard', labelKey: 'sidebar.dashboard', icon: LayoutDashboard },
+    { to: '/dashboard', labelKey: 'sidebar.dashboard', icon: LayoutDashboard, roles: ['admin', 'manager'] },
     { to: '/inventory', labelKey: 'sidebar.inventory', icon: Package },
     { to: '/users', labelKey: 'sidebar.users', icon: Users, roles: ['admin'] },
-    { to: '/history', labelKey: 'sidebar.auditHistory', icon: History, roles: ['admin', 'manager'] },
+    { to: '/history', labelKey: 'sidebar.auditHistory', icon: History },
 ];
 
 export const MainLayout: React.FC = () => {

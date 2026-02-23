@@ -28,8 +28,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
     const handleLogout = useCallback(async () => {
         try {
-            localStorage.removeItem('token');
-            localStorage.removeItem('refresh_token');
+            await api.post('/logout');
         } catch {
             // Ignored
         } finally {
@@ -45,22 +44,15 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         window.addEventListener('auth:unauthorized', handleUnauthorized as EventListener);
 
         // Kiểm tra phiên đăng nhập ngay khi app chạy
+        // Cookie sẽ được gửi tự động nhờ withCredentials
         const verifySession = async () => {
-            const token = localStorage.getItem('token');
-            if (!token) {
-                setIsLoading(false);
-                return;
-            }
-
             try {
-                const res = await api.get('/me'); // Lấy info dựa vào Token lấy từ local storage
+                const res = await api.get('/me');
                 setIsAuthenticated(true);
                 setUser(res.data.data);
             } catch {
                 setIsAuthenticated(false);
                 setUser(null);
-                localStorage.removeItem('token');
-                localStorage.removeItem('refresh_token');
             } finally {
                 setIsLoading(false);
             }

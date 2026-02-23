@@ -1,32 +1,27 @@
 import axios, { AxiosError } from "axios";
 import type { InternalAxiosRequestConfig } from "axios";
 
-// Khởi tạo instance
+// Khởi tạo instance với withCredentials để gửi cookies tự động
 export const api = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL || "http://localhost:8080",
+  withCredentials: true,
 });
 
-// Request Interceptor: Gắn token vào header
-api.interceptors.request.use((config) => {
-  const token = localStorage.getItem("token");
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-  return config;
-});
+// Không cần request interceptor gắn Authorization header nữa
+// Cookie sẽ được gửi tự động nhờ withCredentials: true
 
 let isRefreshing = false;
 let failedQueue: Array<{
-  resolve: (token: string) => void;
+  resolve: (value: unknown) => void;
   reject: (err: unknown) => void;
 }> = [];
 
-const processQueue = (error: unknown, token: string | null = null) => {
+const processQueue = (error: unknown) => {
   failedQueue.forEach((prom) => {
     if (error) {
       prom.reject(error);
     } else {
-      prom.resolve(token as string);
+      prom.resolve(undefined);
     }
   });
 
@@ -52,8 +47,7 @@ api.interceptors.response.use(
         return new Promise(function (resolve, reject) {
           failedQueue.push({ resolve, reject });
         })
-          .then((token) => {
-            originalRequest.headers.Authorization = `Bearer ${token}`;
+          .then(() => {
             return api(originalRequest);
           })
           .catch((err) => {
@@ -64,32 +58,19 @@ api.interceptors.response.use(
       originalRequest._retry = true;
       isRefreshing = true;
 
-      const refreshToken = localStorage.getItem("refresh_token");
-      if (!refreshToken) {
-        isRefreshing = false;
-        window.dispatchEvent(new CustomEvent("auth:unauthorized"));
-        return Promise.reject(error);
-      }
-
       try {
-        const { data } = await axios.post(`${api.defaults.baseURL}/refresh`, {
-          refresh_token: refreshToken,
-        });
+        // Cookie refresh_token sẽ tự động gửi kèm nhờ withCredentials
+        await axios.post(
+          `${api.defaults.baseURL}/refresh`,
+          {},
+          { withCredentials: true },
+        );
 
-        const newToken = data.data.token;
-        const newRefreshToken = data.data.refresh_token;
-
-        localStorage.setItem("token", newToken);
-        localStorage.setItem("refresh_token", newRefreshToken);
-
-        api.defaults.headers.common.Authorization = `Bearer ${newToken}`;
-        originalRequest.headers.Authorization = `Bearer ${newToken}`;
-
-        processQueue(null, newToken);
+        processQueue(null);
 
         return api(originalRequest);
       } catch (refreshError) {
-        processQueue(refreshError, null);
+        processQueue(refreshError);
         window.dispatchEvent(new CustomEvent("auth:unauthorized"));
         return Promise.reject(refreshError);
       } finally {

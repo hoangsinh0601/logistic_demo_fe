@@ -1,6 +1,6 @@
+import { InventoryTable } from '@/components/organisms/InventoryTable';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { InventoryTable } from '../components/InventoryTable';
 
 export const Inventory: React.FC = () => {
     const { t } = useTranslation();

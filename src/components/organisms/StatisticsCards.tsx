@@ -1,6 +1,6 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/atoms/card';
 import { useGetStatistics } from '@/hooks/useStatistics';
 import { formatCurrency } from '@/lib/utils';
 import { ArrowDownRight, ArrowUpRight, DollarSign } from 'lucide-react';

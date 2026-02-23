@@ -1,6 +1,6 @@
 import React from 'react';
 import { Navigate, Outlet } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../../context/AuthContext';
 
 export const AdminRoute: React.FC = () => {
     const { isAuthenticated, isLoading, user } = useAuth();
@@ -14,8 +14,7 @@ export const AdminRoute: React.FC = () => {
     }
 
     if (user?.role !== 'admin' && user?.role !== 'manager') {
-        // Redir to main dashboard if not an admin or manager
-        return <Navigate to="/dashboard" replace />;
+        return <Navigate to="/inventory" replace />;
     }
 
     return <Outlet />;

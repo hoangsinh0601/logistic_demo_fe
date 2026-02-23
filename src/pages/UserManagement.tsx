@@ -2,16 +2,8 @@ import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useGetUsers, useDeleteUser } from '@/hooks/useUsers';
 import type { User } from '@/types';
-import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
-} from '@/components/ui/table';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/atoms/card';
+import { Button } from '@/components/atoms/button';
 import { MoreHorizontal, Pencil, Trash } from 'lucide-react';
 import {
     DropdownMenu,
@@ -20,12 +12,13 @@ import {
     DropdownMenuLabel,
     DropdownMenuSeparator,
     DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { UserFormModal } from '@/components/UserFormModal';
+} from '@/components/atoms/dropdown-menu';
+import { UserFormModal } from '@/components/molecules/UserFormModal';
+import { DataTable, usePagination } from '@/components/molecules/DataTable';
+import type { ColumnDef } from '@/components/molecules/DataTable';
 
 export const UserManagement: React.FC = () => {
-    const [page, setPage] = useState(1);
-    const limit = 10;
+    const { page, limit, setPage, setLimit } = usePagination(10);
     const { t } = useTranslation();
 
     const { data, isLoading, error } = useGetUsers(page, limit);
@@ -39,7 +32,6 @@ export const UserManagement: React.FC = () => {
 
     const users = data?.users || [];
     const total = data?.total || 0;
-    const totalPages = Math.ceil(total / limit);
 
     const handleCreateNew = () => {
         setSelectedUser(null);
@@ -57,9 +49,62 @@ export const UserManagement: React.FC = () => {
             await deleteUser.mutateAsync(id);
         } catch (e) {
             console.error('Failed to delete user', e);
-            alert('Failed to delete user');
+            alert(t('Failed to delete user'));
         }
     };
+
+    const columns: ColumnDef<User>[] = [
+        {
+            key: 'username',
+            headerKey: 'users.columns.username',
+            className: 'font-medium',
+            render: (user) => user.username,
+        },
+        {
+            key: 'email',
+            headerKey: 'users.columns.email',
+            render: (user) => user.email,
+        },
+        {
+            key: 'phone',
+            headerKey: 'users.columns.phone',
+            render: (user) => user.phone,
+        },
+        {
+            key: 'role',
+            headerKey: 'users.columns.role',
+            render: (user) => (
+                <span className="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold uppercase tracking-wider bg-secondary text-secondary-foreground">
+                    {user.role}
+                </span>
+            ),
+        },
+        {
+            key: 'actions',
+            header: '',
+            headerClassName: 'w-[50px]',
+            render: (user) => (
+                <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" className="h-8 w-8 p-0">
+                            <span className="sr-only">Open menu</span>
+                            <MoreHorizontal className="h-4 w-4" />
+                        </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                        <DropdownMenuLabel>{t('common.actions')}</DropdownMenuLabel>
+                        <DropdownMenuItem onClick={() => handleEdit(user)}>
+                            <Pencil className="mr-2 h-4 w-4" /> {t('common.edit')}
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem className="text-destructive focus:text-destructive" onClick={() => handleDelete(user.id)}>
+                            <Trash className="mr-2 h-4 w-4" /> {t('common.delete')}
+                        </DropdownMenuItem>
+                    </DropdownMenuContent>
+                </DropdownMenu>
+            ),
+        },
+    ];
 
     return (
         <div className="flex flex-col space-y-6">
@@ -73,84 +118,18 @@ export const UserManagement: React.FC = () => {
                     <Button onClick={handleCreateNew} size="sm">{t('users.addUser')}</Button>
                 </CardHeader>
                 <CardContent>
-                    <Table>
-                        <TableHeader>
-                            <TableRow>
-                                <TableHead>{t('users.columns.username')}</TableHead>
-                                <TableHead>{t('users.columns.email')}</TableHead>
-                                <TableHead>{t('users.columns.phone')}</TableHead>
-                                <TableHead>{t('users.columns.role')}</TableHead>
-                                <TableHead className="w-[50px]"></TableHead>
-                            </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                            {users.length === 0 ? (
-                                <TableRow>
-                                    <TableCell colSpan={5} className="h-24 text-center">
-                                        {t('common.noData')}
-                                    </TableCell>
-                                </TableRow>
-                            ) : (
-                                users.map(user => (
-                                    <TableRow key={user.id}>
-                                        <TableCell className="font-medium">{user.username}</TableCell>
-                                        <TableCell>{user.email}</TableCell>
-                                        <TableCell>{user.phone}</TableCell>
-                                        <TableCell>
-                                            <span className="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold uppercase tracking-wider bg-secondary text-secondary-foreground">
-                                                {user.role}
-                                            </span>
-                                        </TableCell>
-                                        <TableCell>
-                                            <DropdownMenu>
-                                                <DropdownMenuTrigger asChild>
-                                                    <Button variant="ghost" className="h-8 w-8 p-0">
-                                                        <span className="sr-only">Open menu</span>
-                                                        <MoreHorizontal className="h-4 w-4" />
-                                                    </Button>
-                                                </DropdownMenuTrigger>
-                                                <DropdownMenuContent align="end">
-                                                    <DropdownMenuLabel>{t('common.actions')}</DropdownMenuLabel>
-                                                    <DropdownMenuItem onClick={() => handleEdit(user)}>
-                                                        <Pencil className="mr-2 h-4 w-4" /> {t('common.edit')}
-                                                    </DropdownMenuItem>
-                                                    <DropdownMenuSeparator />
-                                                    <DropdownMenuItem className="text-destructive focus:text-destructive" onClick={() => handleDelete(user.id)}>
-                                                        <Trash className="mr-2 h-4 w-4" /> {t('common.delete')}
-                                                    </DropdownMenuItem>
-                                                </DropdownMenuContent>
-                                            </DropdownMenu>
-                                        </TableCell>
-                                    </TableRow>
-                                ))
-                            )}
-                        </TableBody>
-                    </Table>
-
-                    {/* Pagination Controls */}
-                    {totalPages > 1 && (
-                        <div className="flex items-center justify-end space-x-2 py-4">
-                            <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => setPage(p => Math.max(1, p - 1))}
-                                disabled={page === 1}
-                            >
-                                {t('common.previous')}
-                            </Button>
-                            <div className="text-sm text-muted-foreground w-20 text-center">
-                                {t('common.page')} {page} / {totalPages}
-                            </div>
-                            <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => setPage(p => Math.min(totalPages, p + 1))}
-                                disabled={page === totalPages}
-                            >
-                                {t('common.next')}
-                            </Button>
-                        </div>
-                    )}
+                    <DataTable<User>
+                        columns={columns}
+                        data={users}
+                        rowKey={(user) => user.id}
+                        pagination={{
+                            page,
+                            limit,
+                            total,
+                            onPageChange: setPage,
+                            onLimitChange: setLimit,
+                        }}
+                    />
                 </CardContent>
 
                 <UserFormModal

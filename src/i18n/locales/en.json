@@ -14,7 +14,13 @@
     "confirm": "Confirm",
     "search": "Search...",
     "noData": "No data available.",
-    "totalValue": "Total Value"
+    "totalValue": "Total Value",
+    "previous": "Previous",
+    "next": "Next",
+    "page": "Page",
+    "details": "Details",
+    "rowsPerPage": "Rows per page:",
+    "showing": "{{from}}-{{to}} of {{total}}"
   },
   "sidebar": {
     "dashboard": "Dashboard",
@@ -167,10 +173,12 @@
       "password": "Password",
       "passwordPlaceholder": "Leave blank to keep current",
       "role": "Role",
+      "selectRole": "Select role",
       "roleAdmin": "Admin",
       "roleStaff": "Staff",
       "creating": "Creating...",
-      "updating": "Saving..."
+      "updating": "Saving...",
+      "usernamePlaceholder": "Enter username"
     }
   }
 }

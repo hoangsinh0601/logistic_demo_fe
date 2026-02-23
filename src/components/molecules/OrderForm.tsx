@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import type { OrderPayload } from '../types';
+import type { OrderPayload } from '../../types';
 import { useGetProducts, useCreateOrder } from '@/hooks/useProducts';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { Label } from '@/components/ui/label';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/atoms/dialog';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/atoms/select';
+import { Input } from '@/components/atoms/input';
+import { Button } from '@/components/atoms/button';
+import { Label } from '@/components/atoms/label';
 import { Plus, Trash2, ShoppingCart } from 'lucide-react';
 
 export const OrderForm: React.FC = () => {

@@ -3,10 +3,10 @@ import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { api } from '../api/api';
 import { useAuth } from '../context/AuthContext';
-import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
-import { Label } from '@/components/ui/label';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
+import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/atoms/card';
+import { Label } from '@/components/atoms/label';
+import { Input } from '@/components/atoms/input';
+import { Button } from '@/components/atoms/button';
 import { AlertCircle } from 'lucide-react';
 
 export const Login: React.FC = () => {
@@ -25,12 +25,8 @@ export const Login: React.FC = () => {
         setLoading(true);
 
         try {
-            const res = await api.post('/login', { email, password });
-            const tokenData = res.data.data;
-            localStorage.setItem('token', tokenData.token);
-            if (tokenData.refresh_token) {
-                localStorage.setItem('refresh_token', tokenData.refresh_token);
-            }
+            await api.post('/login', { email, password });
+            // Token is now stored in HttpOnly cookies by the backend
 
             // Xong login thì lấy info user
             const meRes = await api.get('/me');

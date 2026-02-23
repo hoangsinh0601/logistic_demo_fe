@@ -10,10 +10,7 @@ export const useInventorySocket = () => {
 
   useEffect(() => {
     const connect = () => {
-      const token = localStorage.getItem("token");
-      const wsUrl = token
-        ? `ws://localhost:8080/ws?token=${token}`
-        : "ws://localhost:8080/ws";
+      const wsUrl = "ws://localhost:8080/ws";
 
       wsRef.current = new WebSocket(wsUrl);
 

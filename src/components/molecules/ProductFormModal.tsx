@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/atoms/button';
 import {
     Dialog,
     DialogContent,
@@ -8,9 +8,9 @@ import {
     DialogFooter,
     DialogHeader,
     DialogTitle,
-} from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+} from '@/components/atoms/dialog';
+import { Input } from '@/components/atoms/input';
+import { Label } from '@/components/atoms/label';
 import type { Product } from '@/types';
 import { useCreateProduct, useUpdateProduct } from '@/hooks/useProducts';
 

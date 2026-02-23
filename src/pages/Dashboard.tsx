@@ -1,8 +1,8 @@
 import React, { useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { StatisticsCards } from '@/components/StatisticsCards';
-import { RankingTables } from '@/components/RankingTables';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { StatisticsCards } from '@/components/organisms/StatisticsCards';
+import { RankingTables } from '@/components/organisms/RankingTables';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/atoms/select';
 
 export const Dashboard: React.FC = () => {
     const { t } = useTranslation();
