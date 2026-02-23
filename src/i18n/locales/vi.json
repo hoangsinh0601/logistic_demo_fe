@@ -135,6 +135,7 @@
       "actionType": "Loại Hành Động",
       "entityId": "ID Đối Tượng",
       "entityName": "Tên Đối Tượng",
+      "logId": "Mã Nhật Ký",
       "payload": "Dữ liệu (Payload)",
       "rawPayload": "Dữ Liệu Thô JSON"
     }

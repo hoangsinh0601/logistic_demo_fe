@@ -55,7 +55,9 @@ export const AuditHistory: React.FC = () => {
 
     const formatDate = (dateString: string) => {
         try {
-            const date = new Date(dateString);
+            // Append Z if no timezone information is present
+            const safeDateString = dateString.includes('Z') || dateString.includes('+') ? dateString : `${dateString}Z`;
+            const date = new Date(safeDateString);
             return new Intl.DateTimeFormat(i18n.language === 'en' ? 'en-US' : 'vi-VN', {
                 year: 'numeric',
                 month: '2-digit',

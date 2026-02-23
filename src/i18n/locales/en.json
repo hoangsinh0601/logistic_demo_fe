@@ -135,6 +135,7 @@
       "actionType": "Action Type",
       "entityId": "Entity ID",
       "entityName": "Entity Name",
+      "logId": "Log ID",
       "payload": "Payload",
       "rawPayload": "Raw Payload"
     }
