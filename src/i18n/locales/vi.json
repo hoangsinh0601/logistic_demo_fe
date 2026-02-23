@@ -103,7 +103,11 @@
     "totalValue": "Ước tính Tổng Giá Trị:",
     "submitting": "Đang gửi...",
     "submitButton": "Gửi Đơn Hàng",
-    "submitCount": "Gửi Đơn Hàng ({{count}} sản phẩm)"
+    "submitCount": "Gửi Đơn Hàng ({{count}} sản phẩm)",
+    "validation": {
+      "emptyProduct": "Vui lòng chọn ít nhất một sản phẩm.",
+      "notEnoughStock": "Không đủ số lượng cho sản phẩm {{name}}. Tồn kho hiện tại: {{stock}}."
+    }
   },
   "audit": {
     "title": "Lịch Sử Hoạt Động",

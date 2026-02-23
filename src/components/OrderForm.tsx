@@ -55,8 +55,19 @@ export const OrderForm: React.FC = () => {
         const validItems = items.filter(item => item.productId !== '');
 
         if (validItems.length === 0) {
-            setErrorMsg('Please select at least one product.');
+            setErrorMsg(t('orders.validation.emptyProduct'));
             return;
+        }
+
+        // Validate export stock
+        if (type === 'EXPORT') {
+            for (const item of validItems) {
+                const product = products.find(p => p.id === item.productId);
+                if (product && item.quantity > product.current_stock) {
+                    setErrorMsg(t('orders.validation.notEnoughStock', { name: product.name, stock: product.current_stock }));
+                    return;
+                }
+            }
         }
 
         const payload: OrderPayload = {

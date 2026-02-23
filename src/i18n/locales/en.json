@@ -103,7 +103,11 @@
     "totalValue": "Estimated Total Value:",
     "submitting": "Submitting...",
     "submitButton": "Submit Order",
-    "submitCount": "Submit Order ({{count}} items)"
+    "submitCount": "Submit Order ({{count}} items)",
+    "validation": {
+      "emptyProduct": "Please select at least one product.",
+      "notEnoughStock": "Not enough stock for {{name}}. Current total: {{stock}}."
+    }
   },
   "audit": {
     "title": "Audit History Map",
