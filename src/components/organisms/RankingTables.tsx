@@ -51,14 +51,14 @@ export const RankingTables: React.FC<RankingTablesProps> = ({ startDate, endDate
                 </TableRow>
             </TableHeader>
             <TableBody>
-                {items.length === 0 ? (
+                {items?.length === 0 ? (
                     <TableRow>
                         <TableCell colSpan={4} className="h-16 text-center text-muted-foreground text-sm">
                             {t('common.noData')}
                         </TableCell>
                     </TableRow>
                 ) : (
-                    items.map((item, index) => (
+                    items?.map((item, index) => (
                         <TableRow key={item.product_id}>
                             <TableCell className="font-medium text-muted-foreground">{index + 1}</TableCell>
                             <TableCell>
