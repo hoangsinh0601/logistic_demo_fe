@@ -1,0 +1,248 @@
+import React, { useState } from "react";
+import { useGetTaxRules, useCreateTaxRule } from "@/hooks/useTaxRules";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/atoms/card";
+import { Input } from "@/components/atoms/input";
+import { Label } from "@/components/atoms/label";
+import { Button } from "@/components/atoms/button";
+import { Badge } from "@/components/atoms/badge";
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/atoms/select";
+import {
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
+} from "@/components/atoms/table";
+import type { TaxType } from "@/types";
+
+const TAX_TYPE_OPTIONS: { value: TaxType; label: string; color: string }[] = [
+    { value: "VAT_INLAND", label: "VAT Nội địa", color: "bg-blue-100 text-blue-800" },
+    { value: "VAT_INTL", label: "VAT Quốc tế", color: "bg-indigo-100 text-indigo-800" },
+    { value: "FCT", label: "Thuế Nhà thầu (FCT)", color: "bg-amber-100 text-amber-800" },
+];
+
+export const TaxRules: React.FC = () => {
+    const { data: rules, isLoading } = useGetTaxRules();
+    const createTaxRule = useCreateTaxRule();
+
+    const [taxType, setTaxType] = useState<TaxType>("FCT");
+    const [rate, setRate] = useState("");
+    const [effectiveFrom, setEffectiveFrom] = useState("");
+    const [effectiveTo, setEffectiveTo] = useState("");
+    const [description, setDescription] = useState("");
+    const [showForm, setShowForm] = useState(false);
+
+    const handleSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+
+        // Convert percentage to decimal (e.g. "5" → "0.05")
+        const rateDecimal = (parseFloat(rate) / 100).toFixed(6);
+
+        createTaxRule.mutate(
+            {
+                tax_type: taxType,
+                rate: rateDecimal,
+                effective_from: effectiveFrom,
+                effective_to: effectiveTo || undefined,
+                description: description || undefined,
+            },
+            {
+                onSuccess: () => {
+                    setRate("");
+                    setEffectiveFrom("");
+                    setEffectiveTo("");
+                    setDescription("");
+                    setShowForm(false);
+                },
+            }
+        );
+    };
+
+    const getTaxTypeLabel = (type: string) => {
+        const opt = TAX_TYPE_OPTIONS.find((o) => o.value === type);
+        return opt || { label: type, color: "bg-gray-100 text-gray-800" };
+    };
+
+    return (
+        <div className="space-y-6">
+            <div className="flex items-center justify-between">
+                <div>
+                    <h1 className="text-2xl font-bold tracking-tight">Quản lý Thuế suất</h1>
+                    <p className="text-muted-foreground">
+                        Cấu hình thuế suất VAT, FCT theo thời gian hiệu lực.
+                    </p>
+                </div>
+                <Button onClick={() => setShowForm(!showForm)}>
+                    {showForm ? "Đóng" : "+ Thêm thuế suất"}
+                </Button>
+            </div>
+
+            {/* Create Form */}
+            {showForm && (
+                <Card className="border-2 border-primary/20 animate-in fade-in slide-in-from-top-2 duration-300">
+                    <CardHeader className="pb-4">
+                        <CardTitle className="text-lg">Thêm thuế suất mới</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <form onSubmit={handleSubmit} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                            <div className="space-y-2">
+                                <Label htmlFor="tax_type">Loại thuế *</Label>
+                                <Select value={taxType} onValueChange={(v) => setTaxType(v as TaxType)}>
+                                    <SelectTrigger id="tax_type">
+                                        <SelectValue placeholder="Chọn loại thuế" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {TAX_TYPE_OPTIONS.map((o) => (
+                                            <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+
+                            <div className="space-y-2">
+                                <Label htmlFor="rate">Thuế suất (%) *</Label>
+                                <Input
+                                    id="rate"
+                                    type="number"
+                                    step="0.01"
+                                    min="0"
+                                    max="100"
+                                    placeholder="VD: 5, 10, 8"
+                                    value={rate}
+                                    onChange={(e) => setRate(e.target.value)}
+                                    required
+                                />
+                            </div>
+
+                            <div className="space-y-2">
+                                <Label htmlFor="effective_from">Hiệu lực từ *</Label>
+                                <Input
+                                    id="effective_from"
+                                    type="date"
+                                    value={effectiveFrom}
+                                    onChange={(e) => setEffectiveFrom(e.target.value)}
+                                    required
+                                />
+                            </div>
+
+                            <div className="space-y-2">
+                                <Label htmlFor="effective_to">Hiệu lực đến (tùy chọn)</Label>
+                                <Input
+                                    id="effective_to"
+                                    type="date"
+                                    value={effectiveTo}
+                                    onChange={(e) => setEffectiveTo(e.target.value)}
+                                />
+                            </div>
+
+                            <div className="space-y-2 sm:col-span-2">
+                                <Label htmlFor="tax_description">Mô tả</Label>
+                                <Input
+                                    id="tax_description"
+                                    placeholder="VD: Thuế nhà thầu 5% theo NĐ 126/2020"
+                                    value={description}
+                                    onChange={(e) => setDescription(e.target.value)}
+                                />
+                            </div>
+
+                            <div className="flex items-end gap-2 sm:col-span-2 lg:col-span-3">
+                                <Button type="submit" disabled={createTaxRule.isPending} className="min-w-[120px]">
+                                    {createTaxRule.isPending ? "Đang lưu..." : "Lưu"}
+                                </Button>
+                                <Button type="button" variant="ghost" onClick={() => setShowForm(false)}>
+                                    Hủy
+                                </Button>
+                            </div>
+
+                            {createTaxRule.isError && (
+                                <p className="text-sm text-red-600 bg-red-50 p-3 rounded-md sm:col-span-2 lg:col-span-3">
+                                    ❌ {(createTaxRule.error as Error)?.message || "Có lỗi xảy ra"}
+                                </p>
+                            )}
+                        </form>
+                    </CardContent>
+                </Card>
+            )}
+
+            {/* Rules Table */}
+            <Card>
+                <CardHeader>
+                    <CardTitle className="text-lg">
+                        Danh sách thuế suất {rules ? `(${rules.length})` : ""}
+                    </CardTitle>
+                </CardHeader>
+                <CardContent>
+                    {isLoading ? (
+                        <p className="text-muted-foreground text-center py-8">Đang tải...</p>
+                    ) : !rules || rules.length === 0 ? (
+                        <div className="text-center py-12 space-y-3">
+                            <p className="text-4xl">📋</p>
+                            <p className="text-muted-foreground">Chưa có thuế suất nào. Nhấn "Thêm thuế suất" để bắt đầu.</p>
+                        </div>
+                    ) : (
+                        <div className="overflow-x-auto">
+                            <Table>
+                                <TableHeader>
+                                    <TableRow>
+                                        <TableHead>Loại thuế</TableHead>
+                                        <TableHead className="text-right">Thuế suất</TableHead>
+                                        <TableHead>Hiệu lực từ</TableHead>
+                                        <TableHead>Hiệu lực đến</TableHead>
+                                        <TableHead>Mô tả</TableHead>
+                                        <TableHead>Trạng thái</TableHead>
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                    {rules.map((rule) => {
+                                        const typeInfo = getTaxTypeLabel(rule.tax_type);
+                                        const ratePercent = (parseFloat(rule.rate) * 100).toFixed(2);
+                                        const now = new Date().toISOString().split("T")[0];
+                                        const isActive =
+                                            rule.effective_from <= now &&
+                                            (rule.effective_to === null || rule.effective_to >= now);
+
+                                        return (
+                                            <TableRow key={rule.id}>
+                                                <TableCell>
+                                                    <Badge className={typeInfo.color}>{typeInfo.label}</Badge>
+                                                </TableCell>
+                                                <TableCell className="text-right font-mono font-semibold text-lg">
+                                                    {ratePercent}%
+                                                </TableCell>
+                                                <TableCell>
+                                                    {new Date(rule.effective_from).toLocaleDateString("vi-VN")}
+                                                </TableCell>
+                                                <TableCell>
+                                                    {rule.effective_to
+                                                        ? new Date(rule.effective_to).toLocaleDateString("vi-VN")
+                                                        : <span className="text-muted-foreground italic">Không giới hạn</span>}
+                                                </TableCell>
+                                                <TableCell className="max-w-[250px] truncate">
+                                                    {rule.description || "—"}
+                                                </TableCell>
+                                                <TableCell>
+                                                    {isActive ? (
+                                                        <Badge className="bg-green-100 text-green-800">Đang áp dụng</Badge>
+                                                    ) : (
+                                                        <Badge variant="secondary">Hết hiệu lực</Badge>
+                                                    )}
+                                                </TableCell>
+                                            </TableRow>
+                                        );
+                                    })}
+                                </TableBody>
+                            </Table>
+                        </div>
+                    )}
+                </CardContent>
+            </Card>
+        </div>
+    );
+};

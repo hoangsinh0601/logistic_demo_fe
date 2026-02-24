@@ -25,6 +25,8 @@
   "sidebar": {
     "dashboard": "Bảng Điều Khiển",
     "inventory": "Kho Hàng",
+    "expenses": "Chi Phí",
+    "taxRules": "Thuế Suất",
     "auditHistory": "Lịch Sử Hoạt Động",
     "users": "Quản Lý Người Dùng",
     "logout": "Đăng Xuất"

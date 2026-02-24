@@ -3,7 +3,7 @@ import { Outlet, Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/atoms/button';
-import { Users, LayoutDashboard, LogOut, Package, History } from 'lucide-react';
+import { Users, LayoutDashboard, LogOut, Package, History, Receipt, Scale } from 'lucide-react';
 import { LanguageSwitcher } from '../molecules/LanguageSwitcher';
 
 interface NavItem {
@@ -16,6 +16,8 @@ interface NavItem {
 const NAV_ITEMS: NavItem[] = [
     { to: '/dashboard', labelKey: 'sidebar.dashboard', icon: LayoutDashboard, roles: ['admin', 'manager'] },
     { to: '/inventory', labelKey: 'sidebar.inventory', icon: Package },
+    { to: '/expenses', labelKey: 'sidebar.expenses', icon: Receipt },
+    { to: '/tax-rules', labelKey: 'sidebar.taxRules', icon: Scale, roles: ['admin', 'manager'] },
     { to: '/users', labelKey: 'sidebar.users', icon: Users, roles: ['admin'] },
     { to: '/history', labelKey: 'sidebar.auditHistory', icon: History },
 ];

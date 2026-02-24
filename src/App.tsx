@@ -5,6 +5,8 @@ import { Dashboard } from './pages/Dashboard';
 import { Inventory } from './pages/Inventory';
 import { UserManagement } from './pages/UserManagement';
 import { AuditHistory } from './pages/AuditHistory';
+import { Expenses } from './pages/Expenses';
+import { TaxRules } from './pages/TaxRules';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { ProtectedRoute } from './components/templates/ProtectedRoute';
@@ -26,6 +28,8 @@ function App() {
             <Route element={<ProtectedRoute />}>
               <Route element={<MainLayout />}>
                 <Route path="/inventory" element={<Inventory />} />
+                <Route path="/expenses" element={<Expenses />} />
+                <Route path="/tax-rules" element={<TaxRules />} />
                 <Route path="/history" element={<AuditHistory />} />
 
                 {/* Admin/Manager only routes */}
