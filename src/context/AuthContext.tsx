@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
+import React, { createContext, useContext, useEffect, useState, useCallback, useMemo } from 'react';
 import type { ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../api/api';
@@ -8,6 +8,7 @@ interface User {
     username: string;
     email: string;
     role: string;
+    permissions: string[];
 }
 
 interface AuthContextType {
@@ -16,6 +17,8 @@ interface AuthContextType {
     isLoading: boolean;
     login: (userData: User) => void;
     logout: () => void;
+    hasPermission: (code: string) => boolean;
+    hasAnyPermission: (...codes: string[]) => boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -44,12 +47,18 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         window.addEventListener('auth:unauthorized', handleUnauthorized as EventListener);
 
         // Kiểm tra phiên đăng nhập ngay khi app chạy
-        // Cookie sẽ được gửi tự động nhờ withCredentials
         const verifySession = async () => {
             try {
                 const res = await api.get('/me');
+                const data = res.data.data;
                 setIsAuthenticated(true);
-                setUser(res.data.data);
+                setUser({
+                    id: data.id,
+                    username: data.username,
+                    email: data.email,
+                    role: data.role,
+                    permissions: data.permissions || [],
+                });
             } catch {
                 setIsAuthenticated(false);
                 setUser(null);
@@ -63,13 +72,43 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         return () => window.removeEventListener('auth:unauthorized', handleUnauthorized as EventListener);
     }, [handleLogout]);
 
-    const login = (userData: User) => {
+    const login = useCallback(async (userData: User) => {
         setIsAuthenticated(true);
         setUser(userData);
-    };
+
+        // Re-fetch /me to get fresh permissions for the new account
+        try {
+            const res = await api.get('/me');
+            const data = res.data.data;
+            setUser({
+                id: data.id,
+                username: data.username,
+                email: data.email,
+                role: data.role,
+                permissions: data.permissions || [],
+            });
+        } catch {
+            // Keep the initial userData if /me fails
+        }
+    }, []);
+
+    const hasPermission = useCallback((code: string): boolean => {
+        if (!user?.permissions) return false;
+        return user.permissions.includes(code);
+    }, [user]);
+
+    const hasAnyPermission = useCallback((...codes: string[]): boolean => {
+        if (!user?.permissions) return false;
+        return codes.some(code => user.permissions.includes(code));
+    }, [user]);
+
+    const value = useMemo(() => ({
+        isAuthenticated, user, isLoading, login, logout: handleLogout,
+        hasPermission, hasAnyPermission,
+    }), [isAuthenticated, user, isLoading, handleLogout, hasPermission, hasAnyPermission]);
 
     return (
-        <AuthContext.Provider value={{ isAuthenticated, user, isLoading, login, logout: handleLogout }}>
+        <AuthContext.Provider value={value}>
             {children}
         </AuthContext.Provider>
     );

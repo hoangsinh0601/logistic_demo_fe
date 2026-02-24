@@ -29,6 +29,7 @@
     "taxRules": "Tax Rules",
     "auditHistory": "Audit History",
     "users": "Users Management",
+    "roles": "Roles & Permissions",
     "logout": "Logout"
   },
   "auth": {

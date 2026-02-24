@@ -29,6 +29,7 @@
     "taxRules": "Thuế Suất",
     "auditHistory": "Lịch Sử Hoạt Động",
     "users": "Quản Lý Người Dùng",
+    "roles": "Phân Quyền",
     "logout": "Đăng Xuất"
   },
   "auth": {

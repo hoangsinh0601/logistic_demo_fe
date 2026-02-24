@@ -7,6 +7,7 @@ import { UserManagement } from './pages/UserManagement';
 import { AuditHistory } from './pages/AuditHistory';
 import { Expenses } from './pages/Expenses';
 import { TaxRules } from './pages/TaxRules';
+import { RoleManagement } from './pages/RoleManagement';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { ProtectedRoute } from './components/templates/ProtectedRoute';
@@ -36,6 +37,7 @@ function App() {
                 <Route element={<AdminRoute />}>
                   <Route path="/dashboard" element={<Dashboard />} />
                   <Route path="/users" element={<UserManagement />} />
+                  <Route path="/roles" element={<RoleManagement />} />
                 </Route>
               </Route>
             </Route>

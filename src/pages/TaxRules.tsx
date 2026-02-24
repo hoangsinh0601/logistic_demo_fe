@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useGetTaxRules, useCreateTaxRule } from "@/hooks/useTaxRules";
+import { useGetTaxRules, useCreateTaxRule, useUpdateTaxRule, useDeleteTaxRule } from "@/hooks/useTaxRules";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/atoms/card";
 import { Input } from "@/components/atoms/input";
 import { Label } from "@/components/atoms/label";
@@ -20,7 +20,7 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/atoms/table";
-import type { TaxType } from "@/types";
+import type { TaxType, TaxRule } from "@/types";
 
 const TAX_TYPE_OPTIONS: { value: TaxType; label: string; color: string }[] = [
     { value: "VAT_INLAND", label: "VAT Nội địa", color: "bg-blue-100 text-blue-800" },
@@ -28,47 +28,89 @@ const TAX_TYPE_OPTIONS: { value: TaxType; label: string; color: string }[] = [
     { value: "FCT", label: "Thuế Nhà thầu (FCT)", color: "bg-amber-100 text-amber-800" },
 ];
 
+interface TaxRuleFormData {
+    taxType: TaxType;
+    rate: string;
+    effectiveFrom: string;
+    effectiveTo: string;
+    description: string;
+}
+
+const INITIAL_FORM: TaxRuleFormData = {
+    taxType: "FCT",
+    rate: "",
+    effectiveFrom: "",
+    effectiveTo: "",
+    description: "",
+};
+
 export const TaxRules: React.FC = () => {
     const { data: rules, isLoading } = useGetTaxRules();
     const createTaxRule = useCreateTaxRule();
+    const updateTaxRule = useUpdateTaxRule();
+    const deleteTaxRule = useDeleteTaxRule();
 
-    const [taxType, setTaxType] = useState<TaxType>("FCT");
-    const [rate, setRate] = useState("");
-    const [effectiveFrom, setEffectiveFrom] = useState("");
-    const [effectiveTo, setEffectiveTo] = useState("");
-    const [description, setDescription] = useState("");
+    const [form, setForm] = useState<TaxRuleFormData>(INITIAL_FORM);
     const [showForm, setShowForm] = useState(false);
+    const [editingId, setEditingId] = useState<string | null>(null);
+    const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
+        const rateDecimal = (parseFloat(form.rate) / 100).toFixed(6);
+        const payload = {
+            tax_type: form.taxType,
+            rate: rateDecimal,
+            effective_from: form.effectiveFrom,
+            effective_to: form.effectiveTo || undefined,
+            description: form.description || undefined,
+        };
 
-        // Convert percentage to decimal (e.g. "5" → "0.05")
-        const rateDecimal = (parseFloat(rate) / 100).toFixed(6);
+        const onSuccess = () => {
+            setForm(INITIAL_FORM);
+            setShowForm(false);
+            setEditingId(null);
+        };
 
-        createTaxRule.mutate(
-            {
-                tax_type: taxType,
-                rate: rateDecimal,
-                effective_from: effectiveFrom,
-                effective_to: effectiveTo || undefined,
-                description: description || undefined,
-            },
-            {
-                onSuccess: () => {
-                    setRate("");
-                    setEffectiveFrom("");
-                    setEffectiveTo("");
-                    setDescription("");
-                    setShowForm(false);
-                },
-            }
-        );
+        if (editingId) {
+            updateTaxRule.mutate({ id: editingId, payload }, { onSuccess });
+        } else {
+            createTaxRule.mutate(payload, { onSuccess });
+        }
+    };
+
+    const handleEdit = (rule: TaxRule) => {
+        setForm({
+            taxType: rule.tax_type as TaxType,
+            rate: (parseFloat(rule.rate) * 100).toFixed(2),
+            effectiveFrom: rule.effective_from,
+            effectiveTo: rule.effective_to || "",
+            description: rule.description,
+        });
+        setEditingId(rule.id);
+        setShowForm(true);
+    };
+
+    const handleDelete = (id: string) => {
+        deleteTaxRule.mutate(id, {
+            onSuccess: () => setDeleteConfirmId(null),
+        });
+    };
+
+    const handleCancel = () => {
+        setForm(INITIAL_FORM);
+        setShowForm(false);
+        setEditingId(null);
     };
 
     const getTaxTypeLabel = (type: string) => {
         const opt = TAX_TYPE_OPTIONS.find((o) => o.value === type);
         return opt || { label: type, color: "bg-gray-100 text-gray-800" };
     };
+
+    const isPending = createTaxRule.isPending || updateTaxRule.isPending;
+    const isError = createTaxRule.isError || updateTaxRule.isError;
+    const error = createTaxRule.error || updateTaxRule.error;
 
     return (
         <div className="space-y-6">
@@ -79,22 +121,24 @@ export const TaxRules: React.FC = () => {
                         Cấu hình thuế suất VAT, FCT theo thời gian hiệu lực.
                     </p>
                 </div>
-                <Button onClick={() => setShowForm(!showForm)}>
+                <Button onClick={() => showForm ? handleCancel() : setShowForm(true)}>
                     {showForm ? "Đóng" : "+ Thêm thuế suất"}
                 </Button>
             </div>
 
-            {/* Create Form */}
+            {/* Create/Edit Form */}
             {showForm && (
                 <Card className="border-2 border-primary/20 animate-in fade-in slide-in-from-top-2 duration-300">
                     <CardHeader className="pb-4">
-                        <CardTitle className="text-lg">Thêm thuế suất mới</CardTitle>
+                        <CardTitle className="text-lg">
+                            {editingId ? "Chỉnh sửa thuế suất" : "Thêm thuế suất mới"}
+                        </CardTitle>
                     </CardHeader>
                     <CardContent>
                         <form onSubmit={handleSubmit} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                             <div className="space-y-2">
                                 <Label htmlFor="tax_type">Loại thuế *</Label>
-                                <Select value={taxType} onValueChange={(v) => setTaxType(v as TaxType)}>
+                                <Select value={form.taxType} onValueChange={(v) => setForm(f => ({ ...f, taxType: v as TaxType }))}>
                                     <SelectTrigger id="tax_type">
                                         <SelectValue placeholder="Chọn loại thuế" />
                                     </SelectTrigger>
@@ -115,8 +159,8 @@ export const TaxRules: React.FC = () => {
                                     min="0"
                                     max="100"
                                     placeholder="VD: 5, 10, 8"
-                                    value={rate}
-                                    onChange={(e) => setRate(e.target.value)}
+                                    value={form.rate}
+                                    onChange={(e) => setForm(f => ({ ...f, rate: e.target.value }))}
                                     required
                                 />
                             </div>
@@ -126,8 +170,8 @@ export const TaxRules: React.FC = () => {
                                 <Input
                                     id="effective_from"
                                     type="date"
-                                    value={effectiveFrom}
-                                    onChange={(e) => setEffectiveFrom(e.target.value)}
+                                    value={form.effectiveFrom}
+                                    onChange={(e) => setForm(f => ({ ...f, effectiveFrom: e.target.value }))}
                                     required
                                 />
                             </div>
@@ -137,8 +181,8 @@ export const TaxRules: React.FC = () => {
                                 <Input
                                     id="effective_to"
                                     type="date"
-                                    value={effectiveTo}
-                                    onChange={(e) => setEffectiveTo(e.target.value)}
+                                    value={form.effectiveTo}
+                                    onChange={(e) => setForm(f => ({ ...f, effectiveTo: e.target.value }))}
                                 />
                             </div>
 
@@ -147,23 +191,23 @@ export const TaxRules: React.FC = () => {
                                 <Input
                                     id="tax_description"
                                     placeholder="VD: Thuế nhà thầu 5% theo NĐ 126/2020"
-                                    value={description}
-                                    onChange={(e) => setDescription(e.target.value)}
+                                    value={form.description}
+                                    onChange={(e) => setForm(f => ({ ...f, description: e.target.value }))}
                                 />
                             </div>
 
                             <div className="flex items-end gap-2 sm:col-span-2 lg:col-span-3">
-                                <Button type="submit" disabled={createTaxRule.isPending} className="min-w-[120px]">
-                                    {createTaxRule.isPending ? "Đang lưu..." : "Lưu"}
+                                <Button type="submit" disabled={isPending} className="min-w-[120px]">
+                                    {isPending ? "Đang lưu..." : editingId ? "Cập nhật" : "Lưu"}
                                 </Button>
-                                <Button type="button" variant="ghost" onClick={() => setShowForm(false)}>
+                                <Button type="button" variant="ghost" onClick={handleCancel}>
                                     Hủy
                                 </Button>
                             </div>
 
-                            {createTaxRule.isError && (
+                            {isError && (
                                 <p className="text-sm text-red-600 bg-red-50 p-3 rounded-md sm:col-span-2 lg:col-span-3">
-                                    ❌ {(createTaxRule.error as Error)?.message || "Có lỗi xảy ra"}
+                                    ❌ {(error as Error)?.message || "Có lỗi xảy ra"}
                                 </p>
                             )}
                         </form>
@@ -197,6 +241,7 @@ export const TaxRules: React.FC = () => {
                                         <TableHead>Hiệu lực đến</TableHead>
                                         <TableHead>Mô tả</TableHead>
                                         <TableHead>Trạng thái</TableHead>
+                                        <TableHead className="text-right">Thao tác</TableHead>
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
@@ -234,12 +279,58 @@ export const TaxRules: React.FC = () => {
                                                         <Badge variant="secondary">Hết hiệu lực</Badge>
                                                     )}
                                                 </TableCell>
+                                                <TableCell className="text-right">
+                                                    <div className="flex justify-end gap-1">
+                                                        <Button
+                                                            variant="ghost"
+                                                            size="sm"
+                                                            onClick={() => handleEdit(rule)}
+                                                            className="text-blue-600 hover:text-blue-800 hover:bg-blue-50"
+                                                        >
+                                                            ✏️
+                                                        </Button>
+                                                        {deleteConfirmId === rule.id ? (
+                                                            <div className="flex gap-1">
+                                                                <Button
+                                                                    variant="destructive"
+                                                                    size="sm"
+                                                                    onClick={() => handleDelete(rule.id)}
+                                                                    disabled={deleteTaxRule.isPending}
+                                                                >
+                                                                    {deleteTaxRule.isPending ? "..." : "Xóa"}
+                                                                </Button>
+                                                                <Button
+                                                                    variant="ghost"
+                                                                    size="sm"
+                                                                    onClick={() => setDeleteConfirmId(null)}
+                                                                >
+                                                                    Hủy
+                                                                </Button>
+                                                            </div>
+                                                        ) : (
+                                                            <Button
+                                                                variant="ghost"
+                                                                size="sm"
+                                                                onClick={() => setDeleteConfirmId(rule.id)}
+                                                                className="text-red-600 hover:text-red-800 hover:bg-red-50"
+                                                            >
+                                                                🗑️
+                                                            </Button>
+                                                        )}
+                                                    </div>
+                                                </TableCell>
                                             </TableRow>
                                         );
                                     })}
                                 </TableBody>
                             </Table>
                         </div>
+                    )}
+
+                    {deleteTaxRule.isError && (
+                        <p className="text-sm text-red-600 bg-red-50 p-3 rounded-md mt-4">
+                            ❌ {(deleteTaxRule.error as Error)?.message || "Xóa thất bại"}
+                        </p>
                     )}
                 </CardContent>
             </Card>

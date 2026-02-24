@@ -11,6 +11,7 @@ import {
     SelectValue,
 } from "@/components/atoms/select";
 import { useCreateExpense } from "@/hooks/useExpenses";
+import { useGetActiveTaxRate } from "@/hooks/useTaxRules";
 import type { CurrencyCode, DocumentType, FCTType, CreateExpensePayload } from "@/types";
 
 const CURRENCIES: { value: CurrencyCode; label: string }[] = [
@@ -74,8 +75,14 @@ export const ExpenseForm: React.FC = () => {
     const [documentUrl, setDocumentUrl] = useState("");
     const [description, setDescription] = useState("");
 
-    // FCT rate — in production you'd fetch from API, for preview we use a default
-    const [fctRateInput, setFctRateInput] = useState("5"); // Default 5% FCT
+    // Fetch active FCT rate from server (Issue 4)
+    const { data: activeFctRate } = useGetActiveTaxRate("FCT");
+    const { data: activeVatRate } = useGetActiveTaxRate(isForeignVendor ? "VAT_INTL" : "VAT_INLAND");
+
+    // FCT rate — synced from server, editable for preview override
+    const serverFctRate = activeFctRate ? (parseFloat(activeFctRate.rate) * 100).toFixed(2) : "";
+    const [fctRateInput, setFctRateInput] = useState("");
+    const effectiveFctRate = fctRateInput || serverFctRate || "0";
 
     const createExpense = useCreateExpense();
 
@@ -92,7 +99,7 @@ export const ExpenseForm: React.FC = () => {
     const preview = useMemo(() => {
         const amount = originalAmount || "0";
         const rate = currency === "VND" ? "1" : (exchangeRate || "0");
-        const fctPercent = fctRateInput || "0";
+        const fctPercent = effectiveFctRate;
 
         const convertedVND = safeMultiply(amount, rate);
         const fctRateDecimal = (parseFloat(fctPercent) / 100).toFixed(6);
@@ -112,12 +119,20 @@ export const ExpenseForm: React.FC = () => {
         const fctInOriginal = parseFloat(rate) > 0 ? safeDivide(fctAmountVND, rate) : "0";
         const totalPayable = (parseFloat(amount) + parseFloat(fctInOriginal)).toFixed(4);
 
+        // VAT preview
+        let vatAmountVND = "0";
+        if (documentType === "VAT_INVOICE" && activeVatRate) {
+            const vatRateDecimal = activeVatRate.rate; // already decimal from server
+            vatAmountVND = safeMultiply(convertedVND, vatRateDecimal);
+        }
+
         return {
             convertedVND,
             fctAmountVND,
             totalPayable,
+            vatAmountVND,
         };
-    }, [originalAmount, exchangeRate, currency, isForeignVendor, fctType, fctRateInput]);
+    }, [originalAmount, exchangeRate, currency, isForeignVendor, fctType, effectiveFctRate, documentType, activeVatRate]);
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
@@ -303,12 +318,14 @@ export const ExpenseForm: React.FC = () => {
                                             min="0"
                                             max="100"
                                             placeholder="5"
-                                            value={fctRateInput}
+                                            value={fctRateInput || serverFctRate}
                                             onChange={(e) => setFctRateInput(e.target.value)}
                                             className="max-w-[200px]"
                                         />
                                         <p className="text-xs text-muted-foreground">
-                                            Thuế suất sẽ được lấy từ hệ thống khi submit. Giá trị này chỉ dùng cho Preview.
+                                            {serverFctRate
+                                                ? `Thuế suất từ hệ thống: ${serverFctRate}%. Bạn có thể ghi đè cho Preview.`
+                                                : "Chưa có thuế suất FCT trong hệ thống. Nhập thủ công cho Preview."}
                                         </p>
                                     </div>
                                 </div>
@@ -441,15 +458,30 @@ export const ExpenseForm: React.FC = () => {
                                 {formatVND(preview.fctAmountVND)} ₫
                             </p>
                             <p className="text-xs text-amber-600">
-                                FCT {fctRateInput}% ({fctType === "NET" ? "trên giá trước thuế" : "trên giá đã gồm thuế"})
+                                FCT {effectiveFctRate}% ({fctType === "NET" ? "trên giá trước thuế" : "trên giá đã gồm thuế"})
+                            </p>
+                        </div>
+                    )}
+
+                    {/* VAT Amount */}
+                    {documentType === "VAT_INVOICE" && parseFloat(preview.vatAmountVND) > 0 && (
+                        <div className="rounded-lg bg-gradient-to-br from-green-50 to-lime-50 p-4 space-y-1 animate-in fade-in duration-300">
+                            <p className="text-xs font-medium text-green-600 uppercase tracking-wider">
+                                VAT ({isForeignVendor ? "Quốc tế" : "Nội địa"})
+                            </p>
+                            <p className="text-2xl font-bold text-green-900">
+                                {formatVND(preview.vatAmountVND)} ₫
+                            </p>
+                            <p className="text-xs text-green-600">
+                                {activeVatRate ? `${(parseFloat(activeVatRate.rate) * 100).toFixed(2)}% (từ hệ thống)` : "Chưa có thuế suất VAT"}
                             </p>
                         </div>
                     )}
 
                     {/* Deductibility Status */}
                     <div className={`rounded-lg p-3 text-center text-sm font-medium ${isVATInvoice && vendorTaxCode
-                            ? "bg-green-100 text-green-800 border border-green-200"
-                            : "bg-gray-100 text-gray-500 border border-gray-200"
+                        ? "bg-green-100 text-green-800 border border-green-200"
+                        : "bg-gray-100 text-gray-500 border border-gray-200"
                         }`}>
                         {isVATInvoice && vendorTaxCode
                             ? "✅ Chi phí hợp lệ (Deductible)"

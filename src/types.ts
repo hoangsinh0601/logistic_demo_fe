@@ -105,6 +105,20 @@ export interface CreateTaxRulePayload {
   description?: string;
 }
 
+export interface UpdateTaxRulePayload {
+  tax_type: TaxType;
+  rate: string;
+  effective_from: string;
+  effective_to?: string;
+  description?: string;
+}
+
+export interface ActiveTaxRate {
+  tax_type: string;
+  rate: string;
+  rule_id: string;
+}
+
 export interface Expense {
   id: string;
   order_id: string | null;
@@ -118,6 +132,8 @@ export interface Expense {
   fct_rate: string;
   fct_amount_vnd: string;
   total_payable: string;
+  vat_rate: string;
+  vat_amount_vnd: string;
   document_type: DocumentType;
   vendor_tax_code: string | null;
   document_url: string;
@@ -138,4 +154,37 @@ export interface CreateExpensePayload {
   vendor_tax_code?: string;
   document_url?: string;
   description?: string;
+}
+
+// --- ROLE & PERMISSION TYPES ---
+
+export interface Permission {
+  id: string;
+  code: string;
+  name: string;
+  group: string;
+}
+
+export interface Role {
+  id: string;
+  name: string;
+  description: string;
+  is_system: boolean;
+  permissions: Permission[];
+  created_at: string;
+}
+
+export interface CreateRolePayload {
+  name: string;
+  description: string;
+  permissions?: string[];
+}
+
+export interface UpdateRolePayload {
+  name: string;
+  description: string;
+}
+
+export interface UpdateRolePermissionsPayload {
+  permission_ids: string[];
 }

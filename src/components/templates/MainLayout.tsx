@@ -3,27 +3,29 @@ import { Outlet, Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/atoms/button';
-import { Users, LayoutDashboard, LogOut, Package, History, Receipt, Scale } from 'lucide-react';
+import { Users, LayoutDashboard, LogOut, Package, History, Receipt, Scale, Shield } from 'lucide-react';
 import { LanguageSwitcher } from '../molecules/LanguageSwitcher';
 
 interface NavItem {
     to: string;
     labelKey: string;
     icon: React.ElementType;
-    roles?: string[];
+    /** Permission code(s) required to see this nav item. If empty, always visible. */
+    permissions?: string[];
 }
 
 const NAV_ITEMS: NavItem[] = [
-    { to: '/dashboard', labelKey: 'sidebar.dashboard', icon: LayoutDashboard, roles: ['admin', 'manager'] },
-    { to: '/inventory', labelKey: 'sidebar.inventory', icon: Package },
-    { to: '/expenses', labelKey: 'sidebar.expenses', icon: Receipt },
-    { to: '/tax-rules', labelKey: 'sidebar.taxRules', icon: Scale, roles: ['admin', 'manager'] },
-    { to: '/users', labelKey: 'sidebar.users', icon: Users, roles: ['admin'] },
-    { to: '/history', labelKey: 'sidebar.auditHistory', icon: History },
+    { to: '/dashboard', labelKey: 'sidebar.dashboard', icon: LayoutDashboard, permissions: ['dashboard.read'] },
+    { to: '/inventory', labelKey: 'sidebar.inventory', icon: Package, permissions: ['inventory.read'] },
+    { to: '/expenses', labelKey: 'sidebar.expenses', icon: Receipt, permissions: ['expenses.read'] },
+    { to: '/tax-rules', labelKey: 'sidebar.taxRules', icon: Scale, permissions: ['tax_rules.read'] },
+    { to: '/users', labelKey: 'sidebar.users', icon: Users, permissions: ['users.read'] },
+    { to: '/roles', labelKey: 'sidebar.roles', icon: Shield, permissions: ['roles.manage'] },
+    { to: '/history', labelKey: 'sidebar.auditHistory', icon: History, permissions: ['audit.read'] },
 ];
 
 export const MainLayout: React.FC = () => {
-    const { user, logout } = useAuth();
+    const { user, logout, hasAnyPermission } = useAuth();
     const location = useLocation();
     const { t } = useTranslation();
 
@@ -47,8 +49,11 @@ export const MainLayout: React.FC = () => {
 
                 <nav className="flex-1 space-y-2 px-4">
                     {NAV_ITEMS.map((item) => {
-                        if (item.roles && (!user?.role || !item.roles.includes(user.role))) {
-                            return null;
+                        // Check permissions — if item has permission requirements, user must have at least one
+                        if (item.permissions && item.permissions.length > 0) {
+                            if (!hasAnyPermission(...item.permissions)) {
+                                return null;
+                            }
                         }
 
                         const Icon = item.icon;
