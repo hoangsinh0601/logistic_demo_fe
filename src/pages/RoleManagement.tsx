@@ -7,6 +7,7 @@ import {
     useDeleteRole,
     useUpdateRolePermissions,
 } from "@/hooks/useRoles";
+import { useTranslation } from "react-i18next";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/atoms/card";
 import { Input } from "@/components/atoms/input";
 import { Label } from "@/components/atoms/label";
@@ -22,17 +23,8 @@ import {
 } from "@/components/atoms/table";
 import type { Role } from "@/types";
 
-const PERM_GROUP_LABELS: Record<string, string> = {
-    dashboard: "📊 Dashboard",
-    inventory: "📦 Kho hàng",
-    expenses: "💰 Chi phí",
-    tax: "📋 Thuế suất",
-    users: "👥 Người dùng",
-    audit: "📜 Lịch sử",
-    roles: "🔐 Phân quyền",
-};
-
 export const RoleManagement: React.FC = () => {
+    const { t } = useTranslation();
     const { data: roles, isLoading: rolesLoading } = useGetRoles();
     const { data: permissions, isLoading: permsLoading } = useGetPermissions();
     const createRole = useCreateRole();
@@ -58,6 +50,12 @@ export const RoleManagement: React.FC = () => {
         });
         return groups;
     }, [permissions]);
+
+    const getPermGroupLabel = (group: string): string => {
+        const key = `roles.permGroups.${group}`;
+        const translated = t(key);
+        return translated === key ? group : translated;
+    };
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
@@ -124,13 +122,11 @@ export const RoleManagement: React.FC = () => {
         <div className="space-y-6">
             <div className="flex items-center justify-between">
                 <div>
-                    <h1 className="text-2xl font-bold tracking-tight">Quản lý Phân quyền</h1>
-                    <p className="text-muted-foreground">
-                        Tạo và quản lý vai trò, gán quyền cho từng vai trò.
-                    </p>
+                    <h1 className="text-2xl font-bold tracking-tight">{t("roles.title")}</h1>
+                    <p className="text-muted-foreground">{t("roles.subtitle")}</p>
                 </div>
                 <Button onClick={() => (showForm ? handleCancel() : setShowForm(true))}>
-                    {showForm ? "Đóng" : "+ Tạo vai trò mới"}
+                    {showForm ? t("common.close") : t("roles.addButton")}
                 </Button>
             </div>
 
@@ -139,27 +135,27 @@ export const RoleManagement: React.FC = () => {
                 <Card className="border-2 border-primary/20 animate-in fade-in slide-in-from-top-2 duration-300">
                     <CardHeader className="pb-4">
                         <CardTitle className="text-lg">
-                            {editingId ? "Chỉnh sửa vai trò" : "Tạo vai trò mới"}
+                            {editingId ? t("roles.editTitle") : t("roles.createTitle")}
                         </CardTitle>
                     </CardHeader>
                     <CardContent>
                         <form onSubmit={handleSubmit} className="space-y-4">
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 <div className="space-y-2">
-                                    <Label htmlFor="role_name">Tên vai trò *</Label>
+                                    <Label htmlFor="role_name">{t("roles.form.name")}</Label>
                                     <Input
                                         id="role_name"
-                                        placeholder="VD: accountant, viewer..."
+                                        placeholder={t("roles.form.namePlaceholder")}
                                         value={name}
                                         onChange={(e) => setName(e.target.value)}
                                         required
                                     />
                                 </div>
                                 <div className="space-y-2">
-                                    <Label htmlFor="role_desc">Mô tả</Label>
+                                    <Label htmlFor="role_desc">{t("roles.form.description")}</Label>
                                     <Input
                                         id="role_desc"
-                                        placeholder="VD: Kế toán — chỉ xem chi phí và thuế"
+                                        placeholder={t("roles.form.descriptionPlaceholder")}
                                         value={description}
                                         onChange={(e) => setDescription(e.target.value)}
                                     />
@@ -169,12 +165,12 @@ export const RoleManagement: React.FC = () => {
                             {/* Permission selection for new roles */}
                             {!editingId && (
                                 <div className="space-y-3">
-                                    <Label>Quyền hạn (chọn khi tạo mới)</Label>
+                                    <Label>{t("roles.form.permissionsLabel")}</Label>
                                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                                         {Object.entries(permissionGroups).map(([group, groupPerms]) => (
                                             <div key={group} className="rounded-lg border p-3 space-y-2">
                                                 <p className="text-sm font-semibold">
-                                                    {PERM_GROUP_LABELS[group] || group}
+                                                    {getPermGroupLabel(group)}
                                                 </p>
                                                 {groupPerms.map((p) => (
                                                     <label key={p.id} className="flex items-center gap-2 text-sm cursor-pointer">
@@ -196,13 +192,13 @@ export const RoleManagement: React.FC = () => {
                             <div className="flex gap-2">
                                 <Button type="submit" disabled={createRole.isPending || updateRole.isPending}>
                                     {(createRole.isPending || updateRole.isPending)
-                                        ? "Đang lưu..."
+                                        ? t("common.saving")
                                         : editingId
-                                            ? "Cập nhật"
-                                            : "Tạo vai trò"}
+                                            ? t("common.update")
+                                            : t("roles.form.createButton")}
                                 </Button>
                                 <Button type="button" variant="ghost" onClick={handleCancel}>
-                                    Hủy
+                                    {t("common.cancel")}
                                 </Button>
                             </div>
                         </form>
@@ -215,9 +211,9 @@ export const RoleManagement: React.FC = () => {
                 <Card className="border-2 border-amber-300 animate-in fade-in slide-in-from-top-2 duration-300">
                     <CardHeader className="pb-4">
                         <CardTitle className="text-lg flex items-center gap-2">
-                            🔐 Phân quyền cho vai trò: <Badge className="text-base">{managingRole.name}</Badge>
+                            🔐 {t("roles.permMatrix.title")} <Badge className="text-base">{managingRole.name}</Badge>
                             {managingRole.is_system && (
-                                <Badge variant="secondary" className="text-xs">System</Badge>
+                                <Badge variant="secondary" className="text-xs">{t("roles.system")}</Badge>
                             )}
                         </CardTitle>
                     </CardHeader>
@@ -226,7 +222,7 @@ export const RoleManagement: React.FC = () => {
                             {Object.entries(permissionGroups).map(([group, groupPerms]) => (
                                 <div key={group} className="rounded-lg border p-3 space-y-2">
                                     <p className="text-sm font-semibold">
-                                        {PERM_GROUP_LABELS[group] || group}
+                                        {getPermGroupLabel(group)}
                                     </p>
                                     {groupPerms.map((p) => (
                                         <label key={p.id} className="flex items-center gap-2 text-sm cursor-pointer">
@@ -246,16 +242,16 @@ export const RoleManagement: React.FC = () => {
 
                         <div className="flex gap-2 pt-2">
                             <Button onClick={handleSavePerms} disabled={updatePerms.isPending}>
-                                {updatePerms.isPending ? "Đang lưu..." : "Lưu phân quyền"}
+                                {updatePerms.isPending ? t("common.saving") : t("roles.permMatrix.saveButton")}
                             </Button>
                             <Button variant="ghost" onClick={() => setManagingPermsForId(null)}>
-                                Đóng
+                                {t("common.close")}
                             </Button>
                         </div>
 
                         {updatePerms.isError && (
                             <p className="text-sm text-red-600 bg-red-50 p-3 rounded-md">
-                                ❌ {(updatePerms.error as Error)?.message || "Có lỗi xảy ra"}
+                                ❌ {(updatePerms.error as Error)?.message || t("common.errorOccurred")}
                             </p>
                         )}
                     </CardContent>
@@ -266,27 +262,27 @@ export const RoleManagement: React.FC = () => {
             <Card>
                 <CardHeader>
                     <CardTitle className="text-lg">
-                        Danh sách vai trò {roles ? `(${roles.length})` : ""}
+                        {t("roles.listTitle")} {roles ? `(${roles.length})` : ""}
                     </CardTitle>
                 </CardHeader>
                 <CardContent>
                     {rolesLoading || permsLoading ? (
-                        <p className="text-muted-foreground text-center py-8">Đang tải...</p>
+                        <p className="text-muted-foreground text-center py-8">{t("common.loading")}</p>
                     ) : !roles || roles.length === 0 ? (
                         <div className="text-center py-12 space-y-3">
                             <p className="text-4xl">🔐</p>
-                            <p className="text-muted-foreground">Chưa có vai trò nào.</p>
+                            <p className="text-muted-foreground">{t("roles.noRoles")}</p>
                         </div>
                     ) : (
                         <div className="overflow-x-auto">
                             <Table>
                                 <TableHeader>
                                     <TableRow>
-                                        <TableHead>Vai trò</TableHead>
-                                        <TableHead>Mô tả</TableHead>
-                                        <TableHead className="text-center">Số quyền</TableHead>
-                                        <TableHead>Loại</TableHead>
-                                        <TableHead className="text-right">Thao tác</TableHead>
+                                        <TableHead>{t("roles.columns.role")}</TableHead>
+                                        <TableHead>{t("roles.columns.description")}</TableHead>
+                                        <TableHead className="text-center">{t("roles.columns.permCount")}</TableHead>
+                                        <TableHead>{t("roles.columns.type")}</TableHead>
+                                        <TableHead className="text-right">{t("roles.columns.actions")}</TableHead>
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
@@ -303,9 +299,9 @@ export const RoleManagement: React.FC = () => {
                                             </TableCell>
                                             <TableCell>
                                                 {role.is_system ? (
-                                                    <Badge className="bg-purple-100 text-purple-800">System</Badge>
+                                                    <Badge className="bg-purple-100 text-purple-800">{t("roles.system")}</Badge>
                                                 ) : (
-                                                    <Badge className="bg-cyan-100 text-cyan-800">Custom</Badge>
+                                                    <Badge className="bg-cyan-100 text-cyan-800">{t("roles.custom")}</Badge>
                                                 )}
                                             </TableCell>
                                             <TableCell className="text-right">
@@ -315,7 +311,7 @@ export const RoleManagement: React.FC = () => {
                                                         size="sm"
                                                         onClick={() => handleManagePerms(role)}
                                                         className="text-amber-600 hover:text-amber-800 hover:bg-amber-50"
-                                                        title="Phân quyền"
+                                                        title={t("roles.assignPerms")}
                                                     >
                                                         🔑
                                                     </Button>
@@ -324,7 +320,7 @@ export const RoleManagement: React.FC = () => {
                                                         size="sm"
                                                         onClick={() => handleEdit(role)}
                                                         className="text-blue-600 hover:text-blue-800 hover:bg-blue-50"
-                                                        title="Chỉnh sửa"
+                                                        title={t("roles.editRole")}
                                                     >
                                                         ✏️
                                                     </Button>
@@ -337,14 +333,14 @@ export const RoleManagement: React.FC = () => {
                                                                     onClick={() => handleDelete(role.id)}
                                                                     disabled={deleteRole.isPending}
                                                                 >
-                                                                    {deleteRole.isPending ? "..." : "Xóa"}
+                                                                    {deleteRole.isPending ? "..." : t("common.delete")}
                                                                 </Button>
                                                                 <Button
                                                                     variant="ghost"
                                                                     size="sm"
                                                                     onClick={() => setDeleteConfirmId(null)}
                                                                 >
-                                                                    Hủy
+                                                                    {t("common.cancel")}
                                                                 </Button>
                                                             </div>
                                                         ) : (
@@ -353,7 +349,7 @@ export const RoleManagement: React.FC = () => {
                                                                 size="sm"
                                                                 onClick={() => setDeleteConfirmId(role.id)}
                                                                 className="text-red-600 hover:text-red-800 hover:bg-red-50"
-                                                                title="Xóa"
+                                                                title={t("roles.deleteRole")}
                                                             >
                                                                 🗑️
                                                             </Button>
@@ -370,7 +366,7 @@ export const RoleManagement: React.FC = () => {
 
                     {deleteRole.isError && (
                         <p className="text-sm text-red-600 bg-red-50 p-3 rounded-md mt-4">
-                            ❌ {(deleteRole.error as Error)?.message || "Xóa thất bại"}
+                            ❌ {(deleteRole.error as Error)?.message || t("common.deleteFailed")}
                         </p>
                     )}
                 </CardContent>

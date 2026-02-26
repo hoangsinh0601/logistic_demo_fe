@@ -84,6 +84,8 @@ export function useCreateOrder() {
     onSuccess: () => {
       // Creating an order manipulates stock levels, invalidate globally
       queryClient.invalidateQueries({ queryKey: productKeys.all });
+      // Order also creates an invoice, refresh invoice list
+      queryClient.invalidateQueries({ queryKey: ["invoices"] });
     },
   });
 }

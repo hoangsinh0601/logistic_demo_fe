@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { OrderPayload } from '../../types';
 import { useGetProducts, useCreateOrder } from '@/hooks/useProducts';
+import { useGetTaxRules } from '@/hooks/useTaxRules';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/atoms/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/atoms/select';
 import { Input } from '@/components/atoms/input';
@@ -11,12 +12,15 @@ import { Plus, Trash2, ShoppingCart } from 'lucide-react';
 
 export const OrderForm: React.FC = () => {
     const { data: products = [], isLoading } = useGetProducts();
+    const { data: taxRules = [] } = useGetTaxRules();
     const createOrder = useCreateOrder();
     const { t } = useTranslation();
 
     const [open, setOpen] = useState(false);
     const [type, setType] = useState<'IMPORT' | 'EXPORT'>('IMPORT');
     const [note, setNote] = useState('');
+    const [taxRuleId, setTaxRuleId] = useState<string>('');
+    const [sideFees, setSideFees] = useState<string>('');
 
     type OrderItemState = {
         productId: string;
@@ -30,6 +34,16 @@ export const OrderForm: React.FC = () => {
 
     const [errorMsg, setErrorMsg] = useState<string | null>(null);
     const [successMsg, setSuccessMsg] = useState<string | null>(null);
+
+    // Filter active tax rules (effective_to is null or in the future)
+    const activeTaxRules = useMemo(() => {
+        const now = new Date().toISOString().split('T')[0];
+        return taxRules.filter(r => !r.effective_to || r.effective_to >= now);
+    }, [taxRules]);
+
+    // Calculate tax preview
+    const selectedTaxRule = activeTaxRules.find(r => r.id === taxRuleId);
+    const taxRate = selectedTaxRule ? parseFloat(selectedTaxRule.rate) : 0;
 
     const handleAddItem = () => {
         setItems([...items, { productId: '', quantity: 1, price: 0 }]);
@@ -78,7 +92,9 @@ export const OrderForm: React.FC = () => {
                 product_id: item.productId,
                 quantity: Number(item.quantity),
                 unit_price: Number(item.price),
-            }))
+            })),
+            tax_rule_id: taxRuleId && taxRuleId !== 'NONE' ? taxRuleId : undefined,
+            side_fees: sideFees || undefined,
         };
 
         try {
@@ -87,6 +103,8 @@ export const OrderForm: React.FC = () => {
             // Reset form
             setItems([{ productId: '', quantity: 1, price: 0 }]);
             setNote('');
+            setTaxRuleId('');
+            setSideFees('');
             setTimeout(() => {
                 setOpen(false);
                 setSuccessMsg(null);
@@ -106,6 +124,9 @@ export const OrderForm: React.FC = () => {
     }
 
     const totalOrderValue = items.reduce((acc, item) => acc + (item.quantity * item.price), 0);
+    const taxPreview = totalOrderValue * taxRate;
+    const sideFeesNum = parseFloat(sideFees) || 0;
+    const grandTotal = totalOrderValue + taxPreview + sideFeesNum;
 
     return (
         <Dialog open={open} onOpenChange={setOpen}>
@@ -145,6 +166,38 @@ export const OrderForm: React.FC = () => {
                                 value={note}
                                 onChange={e => setNote(e.target.value)}
                                 placeholder={t('orders.notePlaceholder')}
+                            />
+                        </div>
+                    </div>
+
+                    {/* Tax Rule & Side Fees */}
+                    <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                            <Label>Áp dụng Thuế</Label>
+                            <Select value={taxRuleId} onValueChange={setTaxRuleId}>
+                                <SelectTrigger>
+                                    <SelectValue placeholder="Chọn loại thuế (tùy chọn)" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="NONE">Không áp dụng thuế</SelectItem>
+                                    {activeTaxRules.map(rule => (
+                                        <SelectItem key={rule.id} value={rule.id}>
+                                            {rule.tax_type} — {(parseFloat(rule.rate) * 100).toFixed(1)}%
+                                            {rule.description ? ` (${rule.description})` : ''}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
+                        <div className="space-y-2">
+                            <Label>Phụ phí (VNĐ)</Label>
+                            <Input
+                                type="number"
+                                min="0"
+                                step="0.01"
+                                value={sideFees}
+                                onChange={e => setSideFees(e.target.value)}
+                                placeholder="0"
                             />
                         </div>
                     </div>
@@ -231,12 +284,34 @@ export const OrderForm: React.FC = () => {
                         </div>
                     </div>
 
-                    <div className="pt-4 border-t flex flex-col gap-4">
+                    <div className="pt-4 border-t flex flex-col gap-3">
                         <div className="flex justify-between w-full items-center">
                             <Label className="text-muted-foreground">{t('orders.totalValue')}</Label>
-                            <span className="text-lg font-semibold tracking-tight">${totalOrderValue.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
+                            <span className="text-base font-medium">${totalOrderValue.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
                         </div>
-                        <div className="flex justify-end gap-3 w-full">
+                        {taxRate > 0 && (
+                            <div className="flex justify-between w-full items-center">
+                                <Label className="text-muted-foreground">
+                                    Thuế ({selectedTaxRule?.tax_type} {(taxRate * 100).toFixed(1)}%)
+                                </Label>
+                                <span className="text-base font-medium text-blue-600">
+                                    +${taxPreview.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                                </span>
+                            </div>
+                        )}
+                        {sideFeesNum > 0 && (
+                            <div className="flex justify-between w-full items-center">
+                                <Label className="text-muted-foreground">Phụ phí</Label>
+                                <span className="text-base font-medium text-orange-600">
+                                    +${sideFeesNum.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                                </span>
+                            </div>
+                        )}
+                        <div className="flex justify-between w-full items-center border-t pt-2">
+                            <Label className="font-semibold">Tổng cộng (Hóa đơn)</Label>
+                            <span className="text-lg font-bold tracking-tight">${grandTotal.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
+                        </div>
+                        <div className="flex justify-end gap-3 w-full mt-2">
                             <Button type="button" variant="outline" onClick={() => setOpen(false)}>
                                 {t('common.cancel')}
                             </Button>

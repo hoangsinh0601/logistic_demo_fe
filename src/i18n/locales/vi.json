@@ -20,13 +20,28 @@
     "page": "Trang",
     "details": "Chi tiết",
     "rowsPerPage": "Số dòng mỗi trang:",
-    "showing": "{{from}}-{{to}} trên {{total}}"
+    "showing": "{{from}}-{{to}} trên {{total}}",
+    "close": "Đóng",
+    "saving": "Đang lưu...",
+    "update": "Cập nhật",
+    "create": "Tạo",
+    "description": "Mô tả",
+    "status": "Trạng thái",
+    "type": "Loại",
+    "date": "Ngày",
+    "all": "Tất cả",
+    "noLimit": "Không giới hạn",
+    "valid": "Hợp lệ",
+    "errorOccurred": "Có lỗi xảy ra",
+    "deleteFailed": "Xóa thất bại"
   },
   "sidebar": {
-    "dashboard": "Bảng Điều Khiển",
+    "dashboard": "Thống kê TC",
     "inventory": "Kho Hàng",
     "expenses": "Chi Phí",
     "taxRules": "Thuế Suất",
+    "approvals": "Bảng Duyệt",
+    "invoices": "Hóa Đơn",
     "auditHistory": "Lịch Sử Hoạt Động",
     "users": "Quản Lý Người Dùng",
     "roles": "Phân Quyền",
@@ -55,7 +70,40 @@
     }
   },
   "dashboard": {
-    "title": "Bảng Điều Khiển Kho"
+    "title": "Thống kê Tài chính",
+    "subtitle": "Doanh thu, chi phí và thuế từ các hóa đơn đã được duyệt.",
+    "groupBy": "Nhóm theo",
+    "byWeek": "Theo Tuần",
+    "byMonth": "Theo Tháng",
+    "byQuarter": "Theo Quý",
+    "byYear": "Theo Năm",
+    "week": "Tuần",
+    "month": "Tháng",
+    "quarter": "Quý",
+    "year": "Năm",
+    "revenue": "Doanh thu",
+    "expense": "Chi phí",
+    "profit": "Lợi nhuận",
+    "taxCollected": "Thuế thu",
+    "taxPaid": "Thuế trả",
+    "sideFees": "Phụ phí",
+    "chartTitle": "Doanh thu & Chi phí theo {{period}}",
+    "loadingData": "Đang tải dữ liệu...",
+    "noDataInPeriod": "Chưa có dữ liệu hóa đơn đã duyệt trong khoảng thời gian này.",
+    "orderStatsTitle": "Thống kê Đơn hàng",
+    "totalImport": "Đơn Nhập kho",
+    "totalExport": "Đơn Xuất kho",
+    "totalOrders": "Tổng Đơn hàng",
+    "topImported": "Top Sản phẩm Nhập nhiều nhất",
+    "topExported": "Top Sản phẩm Xuất nhiều nhất",
+    "noRankingData": "Chưa có dữ liệu xếp hạng.",
+    "rankColumns": {
+      "rank": "#",
+      "sku": "SKU",
+      "product": "Sản phẩm",
+      "quantity": "Số lượng",
+      "value": "Giá trị"
+    }
   },
   "statistics": {
     "totalImport": "Tổng Tiền Nhập Hàng",
@@ -118,6 +166,165 @@
       "notEnoughStock": "Không đủ số lượng cho sản phẩm {{name}}. Tồn kho hiện tại: {{stock}}."
     }
   },
+  "approvals": {
+    "title": "Bảng Duyệt",
+    "subtitle": "Quản lý và duyệt các yêu cầu từ đơn hàng, sản phẩm và chi phí.",
+    "listTitle": "Danh sách Yêu cầu Duyệt",
+    "filterStatus": "Trạng thái:",
+    "filterPlaceholder": "Lọc trạng thái",
+    "statusAll": "Tất cả",
+    "statusPending": "Chờ duyệt",
+    "statusApproved": "Đã duyệt",
+    "statusRejected": "Từ chối",
+    "columns": {
+      "requestType": "Loại yêu cầu",
+      "summary": "Tóm tắt",
+      "requester": "Người tạo",
+      "status": "Trạng thái",
+      "approver": "Người duyệt",
+      "createdAt": "Ngày tạo",
+      "actions": "Thao tác"
+    },
+    "requestTypes": {
+      "CREATE_ORDER": "Tạo đơn hàng",
+      "CREATE_PRODUCT": "Tạo sản phẩm",
+      "CREATE_EXPENSE": "Tạo chi phí"
+    },
+    "orderSummary": {
+      "import": "Nhập",
+      "export": "Xuất"
+    },
+    "approve": "Duyệt",
+    "reject": "Từ chối",
+    "confirmApprove": "Xác nhận duyệt yêu cầu này?",
+    "confirmReject": "Xác nhận từ chối",
+    "rejectReason": "Lý do từ chối...",
+    "rejectionReasonLabel": "Lý do",
+    "noApprovals": "Không có yêu cầu duyệt nào."
+  },
+  "invoices": {
+    "title": "Hoá đơn",
+    "subtitle": "Danh sách hoá đơn đã được duyệt và phát hành.",
+    "listTitle": "Danh sách Hoá đơn",
+    "noInvoices": "Chưa có hoá đơn nào.",
+    "columns": {
+      "invoiceNo": "Số HĐ",
+      "type": "Loại",
+      "tax": "Thuế",
+      "subtotal": "Trước thuế",
+      "taxAmount": "Thuế",
+      "sideFees": "Phụ phí",
+      "totalAmount": "Tổng cộng",
+      "issuedDate": "Ngày phát hành"
+    },
+    "refTypes": {
+      "ORDER_IMPORT": "Nhập hàng",
+      "ORDER_EXPORT": "Xuất hàng",
+      "EXPENSE": "Chi phí"
+    }
+  },
+  "expenses": {
+    "title": "Quản lý Chi phí",
+    "subtitle": "Khai báo chi phí đa tiền tệ, thuế nhà thầu (FCT) và kiểm soát chứng từ hợp lệ.",
+    "listTitle": "Danh sách chi phí",
+    "noExpenses": "Chưa có khoản chi phí nào. Tạo chi phí mới ở form phía trên.",
+    "columns": {
+      "description": "Mô tả",
+      "currency": "Tiền tệ",
+      "originalAmount": "Số tiền gốc",
+      "convertedVND": "Quy đổi VNĐ",
+      "fctVND": "FCT (VNĐ)",
+      "document": "Chứng từ",
+      "deductible": "Khấu trừ",
+      "createdAt": "Ngày tạo"
+    },
+    "documentTypes": {
+      "VAT_INVOICE": "HĐ GTGT",
+      "DIRECT_INVOICE": "HĐ Trực tiếp",
+      "RETAIL_RECEIPT": "Phiếu thu",
+      "NONE": "Không"
+    }
+  },
+  "taxRules": {
+    "title": "Quản lý Thuế suất",
+    "subtitle": "Cấu hình thuế suất VAT, FCT theo thời gian hiệu lực.",
+    "addButton": "+ Thêm thuế suất",
+    "editTitle": "Chỉnh sửa thuế suất",
+    "createTitle": "Thêm thuế suất mới",
+    "listTitle": "Danh sách thuế suất",
+    "noRules": "Chưa có thuế suất nào. Nhấn \"Thêm thuế suất\" để bắt đầu.",
+    "form": {
+      "taxType": "Loại thuế *",
+      "taxTypePlaceholder": "Chọn loại thuế",
+      "rate": "Thuế suất (%) *",
+      "ratePlaceholder": "VD: 5, 10, 8",
+      "effectiveFrom": "Hiệu lực từ *",
+      "effectiveTo": "Hiệu lực đến (tùy chọn)",
+      "description": "Mô tả",
+      "descriptionPlaceholder": "VD: Thuế nhà thầu 5% theo NĐ 126/2020"
+    },
+    "taxTypes": {
+      "VAT_INLAND": "VAT Nội địa",
+      "VAT_INTL": "VAT Quốc tế",
+      "FCT": "Thuế Nhà thầu (FCT)"
+    },
+    "columns": {
+      "taxType": "Loại thuế",
+      "rate": "Thuế suất",
+      "effectiveFrom": "Hiệu lực từ",
+      "effectiveTo": "Hiệu lực đến",
+      "description": "Mô tả",
+      "status": "Trạng thái",
+      "actions": "Thao tác"
+    },
+    "active": "Đang áp dụng",
+    "expired": "Hết hiệu lực"
+  },
+  "roles": {
+    "title": "Quản lý Phân quyền",
+    "subtitle": "Tạo và quản lý vai trò, gán quyền cho từng vai trò.",
+    "addButton": "+ Tạo vai trò mới",
+    "editTitle": "Chỉnh sửa vai trò",
+    "createTitle": "Tạo vai trò mới",
+    "listTitle": "Danh sách vai trò",
+    "noRoles": "Chưa có vai trò nào.",
+    "form": {
+      "name": "Tên vai trò *",
+      "namePlaceholder": "VD: accountant, viewer...",
+      "description": "Mô tả",
+      "descriptionPlaceholder": "VD: Kế toán — chỉ xem chi phí và thuế",
+      "permissionsLabel": "Quyền hạn (chọn khi tạo mới)",
+      "createButton": "Tạo vai trò"
+    },
+    "permMatrix": {
+      "title": "Phân quyền cho vai trò:",
+      "saveButton": "Lưu phân quyền"
+    },
+    "columns": {
+      "role": "Vai trò",
+      "description": "Mô tả",
+      "permCount": "Số quyền",
+      "type": "Loại",
+      "actions": "Thao tác"
+    },
+    "permGroups": {
+      "dashboard": "📊 Dashboard",
+      "inventory": "📦 Kho hàng",
+      "expenses": "💰 Chi phí",
+      "tax": "📋 Thuế suất",
+      "users": "👥 Người dùng",
+      "audit": "📜 Lịch sử",
+      "roles": "🔐 Phân quyền",
+      "invoices": "📄 Hóa đơn",
+      "approvals": "✅ Duyệt yêu cầu",
+      "finance": "📈 Tài chính"
+    },
+    "system": "System",
+    "custom": "Custom",
+    "assignPerms": "Phân quyền",
+    "editRole": "Chỉnh sửa",
+    "deleteRole": "Xóa"
+  },
   "audit": {
     "title": "Lịch Sử Hoạt Động",
     "subtitle": "Bản ghi chi tiết tất cả sự kiện và giao dịch hệ thống.",
@@ -136,7 +343,26 @@
     "actionTags": {
       "product": "Sản Phẩm",
       "order": "Đơn Hàng",
-      "user": "Người Dùng"
+      "user": "Người Dùng",
+      "approval": "Duyệt"
+    },
+    "actions": {
+      "CREATE_PRODUCT": "Tạo sản phẩm",
+      "UPDATE_PRODUCT": "Cập nhật sản phẩm",
+      "DELETE_PRODUCT": "Xóa sản phẩm",
+      "CREATE_ORDER_IMPORT": "Tạo đơn nhập kho",
+      "CREATE_ORDER_EXPORT": "Tạo đơn xuất kho",
+      "CREATE_TAX_RULE": "Tạo thuế suất",
+      "UPDATE_TAX_RULE": "Cập nhật thuế suất",
+      "DELETE_TAX_RULE": "Xóa thuế suất",
+      "CREATE_APPROVAL_REQUEST": "Tạo yêu cầu duyệt",
+      "APPROVE_REQUEST": "Duyệt yêu cầu",
+      "REJECT_REQUEST": "Từ chối yêu cầu",
+      "CREATE_INVOICE_FROM_APPROVAL": "Tạo hóa đơn từ duyệt",
+      "CREATE_EXPENSE": "Tạo chi phí",
+      "CREATE_USER": "Tạo người dùng",
+      "UPDATE_USER": "Cập nhật người dùng",
+      "DELETE_USER": "Xóa người dùng"
     },
     "dialog": {
       "title": "Chi Tiết Nhật Ký Hệ Thống",

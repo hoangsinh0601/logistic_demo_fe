@@ -3,7 +3,7 @@ import { Outlet, Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/atoms/button';
-import { Users, LayoutDashboard, LogOut, Package, History, Receipt, Scale, Shield } from 'lucide-react';
+import { Users, LogOut, Package, History, Receipt, Scale, Shield, FileCheck, BarChart3, ClipboardCheck } from 'lucide-react';
 import { LanguageSwitcher } from '../molecules/LanguageSwitcher';
 
 interface NavItem {
@@ -15,10 +15,12 @@ interface NavItem {
 }
 
 const NAV_ITEMS: NavItem[] = [
-    { to: '/dashboard', labelKey: 'sidebar.dashboard', icon: LayoutDashboard, permissions: ['dashboard.read'] },
+    { to: '/dashboard', labelKey: 'sidebar.dashboard', icon: BarChart3, permissions: ['dashboard.read'] },
     { to: '/inventory', labelKey: 'sidebar.inventory', icon: Package, permissions: ['inventory.read'] },
     { to: '/expenses', labelKey: 'sidebar.expenses', icon: Receipt, permissions: ['expenses.read'] },
     { to: '/tax-rules', labelKey: 'sidebar.taxRules', icon: Scale, permissions: ['tax_rules.read'] },
+    { to: '/approvals', labelKey: 'sidebar.approvals', icon: ClipboardCheck, permissions: ['approvals.read'] },
+    { to: '/invoices', labelKey: 'sidebar.invoices', icon: FileCheck, permissions: ['invoices.read'] },
     { to: '/users', labelKey: 'sidebar.users', icon: Users, permissions: ['users.read'] },
     { to: '/roles', labelKey: 'sidebar.roles', icon: Shield, permissions: ['roles.manage'] },
     { to: '/history', labelKey: 'sidebar.auditHistory', icon: History, permissions: ['audit.read'] },

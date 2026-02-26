@@ -29,6 +29,8 @@ export interface OrderPayload {
   type: "IMPORT" | "EXPORT";
   note: string;
   items: OrderItemPayload[];
+  tax_rule_id?: string;
+  side_fees?: string;
 }
 
 export interface WsMessage {
@@ -187,4 +189,68 @@ export interface UpdateRolePayload {
 
 export interface UpdateRolePermissionsPayload {
   permission_ids: string[];
+}
+
+// --- INVOICE & FINANCE TYPES ---
+
+export type ReferenceType = "ORDER_IMPORT" | "ORDER_EXPORT" | "EXPENSE";
+export type ApprovalStatus = "PENDING" | "APPROVED" | "REJECTED";
+
+export interface Invoice {
+  id: string;
+  invoice_no: string;
+  reference_type: ReferenceType;
+  reference_id: string;
+  tax_rule_id: string | null;
+  tax_type: string | null;
+  tax_rate: string | null;
+  subtotal: string;
+  tax_amount: string;
+  side_fees: string;
+  total_amount: string;
+  approval_status: ApprovalStatus;
+  approved_by: string | null;
+  approved_at: string | null;
+  note: string;
+  created_at: string;
+}
+
+export interface CreateInvoicePayload {
+  reference_type: ReferenceType;
+  reference_id: string;
+  tax_rule_id?: string;
+  subtotal: string;
+  side_fees?: string;
+  note?: string;
+}
+
+export interface RevenueDataPoint {
+  period: string;
+  total_revenue: string;
+  total_expense: string;
+  total_tax_collected: string;
+  total_tax_paid: string;
+  total_side_fees: string;
+}
+
+// --- APPROVAL REQUEST TYPES ---
+
+export type ApprovalRequestType =
+  | "CREATE_ORDER"
+  | "CREATE_PRODUCT"
+  | "CREATE_EXPENSE";
+
+export interface ApprovalRequest {
+  id: string;
+  request_type: ApprovalRequestType;
+  reference_id: string;
+  request_data: string;
+  status: ApprovalStatus;
+  requested_by: string | null;
+  requester_name: string;
+  approved_by: string | null;
+  approver_name: string;
+  approved_at: string | null;
+  rejection_reason: string;
+  created_at: string;
 }

@@ -34,9 +34,17 @@ export const AuditHistory: React.FC = () => {
         if (action.includes("CREATE")) colorClass = "bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-400";
         if (action.includes("UPDATE")) colorClass = "bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-400";
         if (action.includes("DELETE")) colorClass = "bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-400";
+        if (action.includes("APPROVE")) colorClass = "bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-400";
+        if (action.includes("REJECT")) colorClass = "bg-orange-100 text-orange-800 dark:bg-orange-900/40 dark:text-orange-400";
+
+        const translationKey = `audit.actions.${action}`;
+        const label = t(translationKey);
+        // Fallback: if key not found, i18next returns the key itself
+        const displayLabel = label === translationKey ? action.replace(/_/g, " ") : label;
+
         return (
-            <span className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold uppercase tracking-wider ${colorClass}`}>
-                {action.replace(/_/g, " ")}
+            <span className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold tracking-wider ${colorClass}`}>
+                {displayLabel}
             </span>
         );
     };

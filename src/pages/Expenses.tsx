@@ -1,6 +1,7 @@
 import React from "react";
 import { ExpenseForm } from "@/components/organisms/ExpenseForm";
 import { useGetExpenses } from "@/hooks/useExpenses";
+import { useTranslation } from "react-i18next";
 import {
     Table,
     TableBody,
@@ -19,15 +20,14 @@ function formatVND(value: string): string {
 }
 
 export const Expenses: React.FC = () => {
+    const { t } = useTranslation();
     const { data: expenses, isLoading } = useGetExpenses();
 
     return (
         <div className="space-y-8">
             <div>
-                <h1 className="text-2xl font-bold tracking-tight">Quản lý Chi phí</h1>
-                <p className="text-muted-foreground">
-                    Khai báo chi phí đa tiền tệ, thuế nhà thầu (FCT) và kiểm soát chứng từ hợp lệ.
-                </p>
+                <h1 className="text-2xl font-bold tracking-tight">{t("expenses.title")}</h1>
+                <p className="text-muted-foreground">{t("expenses.subtitle")}</p>
             </div>
 
             {/* Expense Form */}
@@ -36,28 +36,28 @@ export const Expenses: React.FC = () => {
             {/* Expense List */}
             <Card>
                 <CardHeader>
-                    <CardTitle className="text-lg">Danh sách chi phí</CardTitle>
+                    <CardTitle className="text-lg">{t("expenses.listTitle")}</CardTitle>
                 </CardHeader>
                 <CardContent>
                     {isLoading ? (
-                        <p className="text-muted-foreground text-center py-8">Đang tải...</p>
+                        <p className="text-muted-foreground text-center py-8">{t("common.loading")}</p>
                     ) : !expenses || expenses.length === 0 ? (
                         <p className="text-muted-foreground text-center py-8">
-                            Chưa có khoản chi phí nào. Tạo chi phí mới ở form phía trên.
+                            {t("expenses.noExpenses")}
                         </p>
                     ) : (
                         <div className="overflow-x-auto">
                             <Table>
                                 <TableHeader>
                                     <TableRow>
-                                        <TableHead>Mô tả</TableHead>
-                                        <TableHead>Tiền tệ</TableHead>
-                                        <TableHead className="text-right">Số tiền gốc</TableHead>
-                                        <TableHead className="text-right">Quy đổi VNĐ</TableHead>
-                                        <TableHead className="text-right">FCT (VNĐ)</TableHead>
-                                        <TableHead>Chứng từ</TableHead>
-                                        <TableHead>Khấu trừ</TableHead>
-                                        <TableHead>Ngày tạo</TableHead>
+                                        <TableHead>{t("expenses.columns.description")}</TableHead>
+                                        <TableHead>{t("expenses.columns.currency")}</TableHead>
+                                        <TableHead className="text-right">{t("expenses.columns.originalAmount")}</TableHead>
+                                        <TableHead className="text-right">{t("expenses.columns.convertedVND")}</TableHead>
+                                        <TableHead className="text-right">{t("expenses.columns.fctVND")}</TableHead>
+                                        <TableHead>{t("expenses.columns.document")}</TableHead>
+                                        <TableHead>{t("expenses.columns.deductible")}</TableHead>
+                                        <TableHead>{t("expenses.columns.createdAt")}</TableHead>
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
@@ -80,14 +80,12 @@ export const Expenses: React.FC = () => {
                                             </TableCell>
                                             <TableCell>
                                                 <Badge variant={exp.document_type === "VAT_INVOICE" ? "default" : "secondary"}>
-                                                    {exp.document_type === "VAT_INVOICE" ? "HĐ GTGT" :
-                                                        exp.document_type === "DIRECT_INVOICE" ? "HĐ Trực tiếp" :
-                                                            exp.document_type === "RETAIL_RECEIPT" ? "Phiếu thu" : "Không"}
+                                                    {t(`expenses.documentTypes.${exp.document_type}`) || exp.document_type}
                                                 </Badge>
                                             </TableCell>
                                             <TableCell>
                                                 {exp.is_deductible_expense ? (
-                                                    <span className="text-green-600 font-medium">✅ Hợp lệ</span>
+                                                    <span className="text-green-600 font-medium">✅ {t("common.valid")}</span>
                                                 ) : (
                                                     <span className="text-gray-400">—</span>
                                                 )}

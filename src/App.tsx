@@ -1,13 +1,15 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import { Login } from './pages/Login';
-import { Dashboard } from './pages/Dashboard';
 import { Inventory } from './pages/Inventory';
 import { UserManagement } from './pages/UserManagement';
 import { AuditHistory } from './pages/AuditHistory';
 import { Expenses } from './pages/Expenses';
 import { TaxRules } from './pages/TaxRules';
 import { RoleManagement } from './pages/RoleManagement';
+import { ApprovalBoard } from './pages/ApprovalBoard';
+import { Invoices } from './pages/Invoices';
+import { FinanceDashboard } from './pages/FinanceDashboard';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { ProtectedRoute } from './components/templates/ProtectedRoute';
@@ -32,10 +34,12 @@ function App() {
                 <Route path="/expenses" element={<Expenses />} />
                 <Route path="/tax-rules" element={<TaxRules />} />
                 <Route path="/history" element={<AuditHistory />} />
+                <Route path="/approvals" element={<ApprovalBoard />} />
+                <Route path="/invoices" element={<Invoices />} />
 
                 {/* Admin/Manager only routes */}
                 <Route element={<AdminRoute />}>
-                  <Route path="/dashboard" element={<Dashboard />} />
+                  <Route path="/dashboard" element={<FinanceDashboard />} />
                   <Route path="/users" element={<UserManagement />} />
                   <Route path="/roles" element={<RoleManagement />} />
                 </Route>

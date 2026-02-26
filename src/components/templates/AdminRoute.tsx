@@ -22,7 +22,7 @@ export const AdminRoute: React.FC = () => {
     }
 
     // User needs at least one "admin-level" permission to access these routes
-    if (!hasAnyPermission('dashboard.read', 'users.read', 'users.write', 'roles.manage')) {
+    if (!hasAnyPermission('dashboard.read', 'users.read', 'users.write', 'roles.manage', 'APPROVE_INVOICE', 'VIEW_FINANCE_REPORT')) {
         return <Navigate to="/inventory" replace />;
     }
 

@@ -12,6 +12,8 @@ export interface ProductRanking {
 export interface StatisticsResponse {
   total_import_value: number;
   total_export_value: number;
+  total_import_orders: number;
+  total_export_orders: number;
   profit: number;
   top_imported_items: ProductRanking[];
   top_exported_items: ProductRanking[];

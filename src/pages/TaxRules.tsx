@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useGetTaxRules, useCreateTaxRule, useUpdateTaxRule, useDeleteTaxRule } from "@/hooks/useTaxRules";
+import { useTranslation } from "react-i18next";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/atoms/card";
 import { Input } from "@/components/atoms/input";
 import { Label } from "@/components/atoms/label";
@@ -22,10 +23,10 @@ import {
 } from "@/components/atoms/table";
 import type { TaxType, TaxRule } from "@/types";
 
-const TAX_TYPE_OPTIONS: { value: TaxType; label: string; color: string }[] = [
-    { value: "VAT_INLAND", label: "VAT Nội địa", color: "bg-blue-100 text-blue-800" },
-    { value: "VAT_INTL", label: "VAT Quốc tế", color: "bg-indigo-100 text-indigo-800" },
-    { value: "FCT", label: "Thuế Nhà thầu (FCT)", color: "bg-amber-100 text-amber-800" },
+const TAX_TYPE_OPTIONS: { value: TaxType; labelKey: string; color: string }[] = [
+    { value: "VAT_INLAND", labelKey: "taxRules.taxTypes.VAT_INLAND", color: "bg-blue-100 text-blue-800" },
+    { value: "VAT_INTL", labelKey: "taxRules.taxTypes.VAT_INTL", color: "bg-indigo-100 text-indigo-800" },
+    { value: "FCT", labelKey: "taxRules.taxTypes.FCT", color: "bg-amber-100 text-amber-800" },
 ];
 
 interface TaxRuleFormData {
@@ -45,6 +46,7 @@ const INITIAL_FORM: TaxRuleFormData = {
 };
 
 export const TaxRules: React.FC = () => {
+    const { t } = useTranslation();
     const { data: rules, isLoading } = useGetTaxRules();
     const createTaxRule = useCreateTaxRule();
     const updateTaxRule = useUpdateTaxRule();
@@ -103,9 +105,9 @@ export const TaxRules: React.FC = () => {
         setEditingId(null);
     };
 
-    const getTaxTypeLabel = (type: string) => {
+    const getTaxTypeInfo = (type: string) => {
         const opt = TAX_TYPE_OPTIONS.find((o) => o.value === type);
-        return opt || { label: type, color: "bg-gray-100 text-gray-800" };
+        return opt || { labelKey: type, color: "bg-gray-100 text-gray-800" };
     };
 
     const isPending = createTaxRule.isPending || updateTaxRule.isPending;
@@ -116,13 +118,11 @@ export const TaxRules: React.FC = () => {
         <div className="space-y-6">
             <div className="flex items-center justify-between">
                 <div>
-                    <h1 className="text-2xl font-bold tracking-tight">Quản lý Thuế suất</h1>
-                    <p className="text-muted-foreground">
-                        Cấu hình thuế suất VAT, FCT theo thời gian hiệu lực.
-                    </p>
+                    <h1 className="text-2xl font-bold tracking-tight">{t("taxRules.title")}</h1>
+                    <p className="text-muted-foreground">{t("taxRules.subtitle")}</p>
                 </div>
                 <Button onClick={() => showForm ? handleCancel() : setShowForm(true)}>
-                    {showForm ? "Đóng" : "+ Thêm thuế suất"}
+                    {showForm ? t("common.close") : t("taxRules.addButton")}
                 </Button>
             </div>
 
@@ -131,34 +131,34 @@ export const TaxRules: React.FC = () => {
                 <Card className="border-2 border-primary/20 animate-in fade-in slide-in-from-top-2 duration-300">
                     <CardHeader className="pb-4">
                         <CardTitle className="text-lg">
-                            {editingId ? "Chỉnh sửa thuế suất" : "Thêm thuế suất mới"}
+                            {editingId ? t("taxRules.editTitle") : t("taxRules.createTitle")}
                         </CardTitle>
                     </CardHeader>
                     <CardContent>
                         <form onSubmit={handleSubmit} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                             <div className="space-y-2">
-                                <Label htmlFor="tax_type">Loại thuế *</Label>
+                                <Label htmlFor="tax_type">{t("taxRules.form.taxType")}</Label>
                                 <Select value={form.taxType} onValueChange={(v) => setForm(f => ({ ...f, taxType: v as TaxType }))}>
                                     <SelectTrigger id="tax_type">
-                                        <SelectValue placeholder="Chọn loại thuế" />
+                                        <SelectValue placeholder={t("taxRules.form.taxTypePlaceholder")} />
                                     </SelectTrigger>
                                     <SelectContent>
                                         {TAX_TYPE_OPTIONS.map((o) => (
-                                            <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>
+                                            <SelectItem key={o.value} value={o.value}>{t(o.labelKey)}</SelectItem>
                                         ))}
                                     </SelectContent>
                                 </Select>
                             </div>
 
                             <div className="space-y-2">
-                                <Label htmlFor="rate">Thuế suất (%) *</Label>
+                                <Label htmlFor="rate">{t("taxRules.form.rate")}</Label>
                                 <Input
                                     id="rate"
                                     type="number"
                                     step="0.01"
                                     min="0"
                                     max="100"
-                                    placeholder="VD: 5, 10, 8"
+                                    placeholder={t("taxRules.form.ratePlaceholder")}
                                     value={form.rate}
                                     onChange={(e) => setForm(f => ({ ...f, rate: e.target.value }))}
                                     required
@@ -166,7 +166,7 @@ export const TaxRules: React.FC = () => {
                             </div>
 
                             <div className="space-y-2">
-                                <Label htmlFor="effective_from">Hiệu lực từ *</Label>
+                                <Label htmlFor="effective_from">{t("taxRules.form.effectiveFrom")}</Label>
                                 <Input
                                     id="effective_from"
                                     type="date"
@@ -177,7 +177,7 @@ export const TaxRules: React.FC = () => {
                             </div>
 
                             <div className="space-y-2">
-                                <Label htmlFor="effective_to">Hiệu lực đến (tùy chọn)</Label>
+                                <Label htmlFor="effective_to">{t("taxRules.form.effectiveTo")}</Label>
                                 <Input
                                     id="effective_to"
                                     type="date"
@@ -187,10 +187,10 @@ export const TaxRules: React.FC = () => {
                             </div>
 
                             <div className="space-y-2 sm:col-span-2">
-                                <Label htmlFor="tax_description">Mô tả</Label>
+                                <Label htmlFor="tax_description">{t("taxRules.form.description")}</Label>
                                 <Input
                                     id="tax_description"
-                                    placeholder="VD: Thuế nhà thầu 5% theo NĐ 126/2020"
+                                    placeholder={t("taxRules.form.descriptionPlaceholder")}
                                     value={form.description}
                                     onChange={(e) => setForm(f => ({ ...f, description: e.target.value }))}
                                 />
@@ -198,16 +198,16 @@ export const TaxRules: React.FC = () => {
 
                             <div className="flex items-end gap-2 sm:col-span-2 lg:col-span-3">
                                 <Button type="submit" disabled={isPending} className="min-w-[120px]">
-                                    {isPending ? "Đang lưu..." : editingId ? "Cập nhật" : "Lưu"}
+                                    {isPending ? t("common.saving") : editingId ? t("common.update") : t("common.save")}
                                 </Button>
                                 <Button type="button" variant="ghost" onClick={handleCancel}>
-                                    Hủy
+                                    {t("common.cancel")}
                                 </Button>
                             </div>
 
                             {isError && (
                                 <p className="text-sm text-red-600 bg-red-50 p-3 rounded-md sm:col-span-2 lg:col-span-3">
-                                    ❌ {(error as Error)?.message || "Có lỗi xảy ra"}
+                                    ❌ {(error as Error)?.message || t("common.errorOccurred")}
                                 </p>
                             )}
                         </form>
@@ -219,34 +219,34 @@ export const TaxRules: React.FC = () => {
             <Card>
                 <CardHeader>
                     <CardTitle className="text-lg">
-                        Danh sách thuế suất {rules ? `(${rules.length})` : ""}
+                        {t("taxRules.listTitle")} {rules ? `(${rules.length})` : ""}
                     </CardTitle>
                 </CardHeader>
                 <CardContent>
                     {isLoading ? (
-                        <p className="text-muted-foreground text-center py-8">Đang tải...</p>
+                        <p className="text-muted-foreground text-center py-8">{t("common.loading")}</p>
                     ) : !rules || rules.length === 0 ? (
                         <div className="text-center py-12 space-y-3">
                             <p className="text-4xl">📋</p>
-                            <p className="text-muted-foreground">Chưa có thuế suất nào. Nhấn "Thêm thuế suất" để bắt đầu.</p>
+                            <p className="text-muted-foreground">{t("taxRules.noRules")}</p>
                         </div>
                     ) : (
                         <div className="overflow-x-auto">
                             <Table>
                                 <TableHeader>
                                     <TableRow>
-                                        <TableHead>Loại thuế</TableHead>
-                                        <TableHead className="text-right">Thuế suất</TableHead>
-                                        <TableHead>Hiệu lực từ</TableHead>
-                                        <TableHead>Hiệu lực đến</TableHead>
-                                        <TableHead>Mô tả</TableHead>
-                                        <TableHead>Trạng thái</TableHead>
-                                        <TableHead className="text-right">Thao tác</TableHead>
+                                        <TableHead>{t("taxRules.columns.taxType")}</TableHead>
+                                        <TableHead className="text-right">{t("taxRules.columns.rate")}</TableHead>
+                                        <TableHead>{t("taxRules.columns.effectiveFrom")}</TableHead>
+                                        <TableHead>{t("taxRules.columns.effectiveTo")}</TableHead>
+                                        <TableHead>{t("taxRules.columns.description")}</TableHead>
+                                        <TableHead>{t("taxRules.columns.status")}</TableHead>
+                                        <TableHead className="text-right">{t("taxRules.columns.actions")}</TableHead>
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
                                     {rules.map((rule) => {
-                                        const typeInfo = getTaxTypeLabel(rule.tax_type);
+                                        const typeInfo = getTaxTypeInfo(rule.tax_type);
                                         const ratePercent = (parseFloat(rule.rate) * 100).toFixed(2);
                                         const now = new Date().toISOString().split("T")[0];
                                         const isActive =
@@ -256,7 +256,7 @@ export const TaxRules: React.FC = () => {
                                         return (
                                             <TableRow key={rule.id}>
                                                 <TableCell>
-                                                    <Badge className={typeInfo.color}>{typeInfo.label}</Badge>
+                                                    <Badge className={typeInfo.color}>{t(typeInfo.labelKey)}</Badge>
                                                 </TableCell>
                                                 <TableCell className="text-right font-mono font-semibold text-lg">
                                                     {ratePercent}%
@@ -267,16 +267,16 @@ export const TaxRules: React.FC = () => {
                                                 <TableCell>
                                                     {rule.effective_to
                                                         ? new Date(rule.effective_to).toLocaleDateString("vi-VN")
-                                                        : <span className="text-muted-foreground italic">Không giới hạn</span>}
+                                                        : <span className="text-muted-foreground italic">{t("common.noLimit")}</span>}
                                                 </TableCell>
                                                 <TableCell className="max-w-[250px] truncate">
                                                     {rule.description || "—"}
                                                 </TableCell>
                                                 <TableCell>
                                                     {isActive ? (
-                                                        <Badge className="bg-green-100 text-green-800">Đang áp dụng</Badge>
+                                                        <Badge className="bg-green-100 text-green-800">{t("taxRules.active")}</Badge>
                                                     ) : (
-                                                        <Badge variant="secondary">Hết hiệu lực</Badge>
+                                                        <Badge variant="secondary">{t("taxRules.expired")}</Badge>
                                                     )}
                                                 </TableCell>
                                                 <TableCell className="text-right">
@@ -297,14 +297,14 @@ export const TaxRules: React.FC = () => {
                                                                     onClick={() => handleDelete(rule.id)}
                                                                     disabled={deleteTaxRule.isPending}
                                                                 >
-                                                                    {deleteTaxRule.isPending ? "..." : "Xóa"}
+                                                                    {deleteTaxRule.isPending ? "..." : t("common.delete")}
                                                                 </Button>
                                                                 <Button
                                                                     variant="ghost"
                                                                     size="sm"
                                                                     onClick={() => setDeleteConfirmId(null)}
                                                                 >
-                                                                    Hủy
+                                                                    {t("common.cancel")}
                                                                 </Button>
                                                             </div>
                                                         ) : (
@@ -329,7 +329,7 @@ export const TaxRules: React.FC = () => {
 
                     {deleteTaxRule.isError && (
                         <p className="text-sm text-red-600 bg-red-50 p-3 rounded-md mt-4">
-                            ❌ {(deleteTaxRule.error as Error)?.message || "Xóa thất bại"}
+                            ❌ {(deleteTaxRule.error as Error)?.message || t("common.deleteFailed")}
                         </p>
                     )}
                 </CardContent>

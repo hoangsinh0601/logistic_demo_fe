@@ -20,13 +20,28 @@
     "page": "Page",
     "details": "Details",
     "rowsPerPage": "Rows per page:",
-    "showing": "{{from}}-{{to}} of {{total}}"
+    "showing": "{{from}}-{{to}} of {{total}}",
+    "close": "Close",
+    "saving": "Saving...",
+    "update": "Update",
+    "create": "Create",
+    "description": "Description",
+    "status": "Status",
+    "type": "Type",
+    "date": "Date",
+    "all": "All",
+    "noLimit": "No limit",
+    "valid": "Valid",
+    "errorOccurred": "An error occurred",
+    "deleteFailed": "Delete failed"
   },
   "sidebar": {
-    "dashboard": "Dashboard",
+    "dashboard": "Finance Stats",
     "inventory": "Inventory",
     "expenses": "Expenses",
     "taxRules": "Tax Rules",
+    "approvals": "Approvals",
+    "invoices": "Invoices",
     "auditHistory": "Audit History",
     "users": "Users Management",
     "roles": "Roles & Permissions",
@@ -55,7 +70,40 @@
     }
   },
   "dashboard": {
-    "title": "Inventory Dashboard"
+    "title": "Finance Dashboard",
+    "subtitle": "Revenue, expenses and taxes from approved invoices.",
+    "groupBy": "Group by",
+    "byWeek": "By Week",
+    "byMonth": "By Month",
+    "byQuarter": "By Quarter",
+    "byYear": "By Year",
+    "week": "Week",
+    "month": "Month",
+    "quarter": "Quarter",
+    "year": "Year",
+    "revenue": "Revenue",
+    "expense": "Expense",
+    "profit": "Profit",
+    "taxCollected": "Tax Collected",
+    "taxPaid": "Tax Paid",
+    "sideFees": "Side Fees",
+    "chartTitle": "Revenue & Expense by {{period}}",
+    "loadingData": "Loading data...",
+    "noDataInPeriod": "No approved invoice data found in this time period.",
+    "orderStatsTitle": "Order Statistics",
+    "totalImport": "Import Orders",
+    "totalExport": "Export Orders",
+    "totalOrders": "Total Orders",
+    "topImported": "Top Imported Products",
+    "topExported": "Top Exported Products",
+    "noRankingData": "No ranking data available.",
+    "rankColumns": {
+      "rank": "#",
+      "sku": "SKU",
+      "product": "Product",
+      "quantity": "Quantity",
+      "value": "Value"
+    }
   },
   "statistics": {
     "totalImport": "Total Import Value",
@@ -118,8 +166,167 @@
       "notEnoughStock": "Not enough stock for {{name}}. Current total: {{stock}}."
     }
   },
+  "approvals": {
+    "title": "Approval Board",
+    "subtitle": "Manage and approve requests from orders, products and expenses.",
+    "listTitle": "Approval Requests",
+    "filterStatus": "Status:",
+    "filterPlaceholder": "Filter status",
+    "statusAll": "All",
+    "statusPending": "Pending",
+    "statusApproved": "Approved",
+    "statusRejected": "Rejected",
+    "columns": {
+      "requestType": "Request Type",
+      "summary": "Summary",
+      "requester": "Requester",
+      "status": "Status",
+      "approver": "Approver",
+      "createdAt": "Created At",
+      "actions": "Actions"
+    },
+    "requestTypes": {
+      "CREATE_ORDER": "Create Order",
+      "CREATE_PRODUCT": "Create Product",
+      "CREATE_EXPENSE": "Create Expense"
+    },
+    "orderSummary": {
+      "import": "Import",
+      "export": "Export"
+    },
+    "approve": "Approve",
+    "reject": "Reject",
+    "confirmApprove": "Confirm approval of this request?",
+    "confirmReject": "Confirm Reject",
+    "rejectReason": "Rejection reason...",
+    "rejectionReasonLabel": "Reason",
+    "noApprovals": "No approval requests found."
+  },
+  "invoices": {
+    "title": "Invoices",
+    "subtitle": "List of approved and issued invoices.",
+    "listTitle": "Invoice List",
+    "noInvoices": "No invoices yet.",
+    "columns": {
+      "invoiceNo": "Invoice No.",
+      "type": "Type",
+      "tax": "Tax",
+      "subtotal": "Subtotal",
+      "taxAmount": "Tax",
+      "sideFees": "Side Fees",
+      "totalAmount": "Total",
+      "issuedDate": "Issued Date"
+    },
+    "refTypes": {
+      "ORDER_IMPORT": "Order Import",
+      "ORDER_EXPORT": "Order Export",
+      "EXPENSE": "Expense"
+    }
+  },
+  "expenses": {
+    "title": "Expense Management",
+    "subtitle": "Declare multi-currency expenses, contractor tax (FCT) and control valid documents.",
+    "listTitle": "Expense List",
+    "noExpenses": "No expenses yet. Create a new expense using the form above.",
+    "columns": {
+      "description": "Description",
+      "currency": "Currency",
+      "originalAmount": "Original Amount",
+      "convertedVND": "Converted VNĐ",
+      "fctVND": "FCT (VNĐ)",
+      "document": "Document",
+      "deductible": "Deductible",
+      "createdAt": "Created At"
+    },
+    "documentTypes": {
+      "VAT_INVOICE": "VAT Invoice",
+      "DIRECT_INVOICE": "Direct Invoice",
+      "RETAIL_RECEIPT": "Retail Receipt",
+      "NONE": "None"
+    }
+  },
+  "taxRules": {
+    "title": "Tax Rules Management",
+    "subtitle": "Configure VAT and FCT tax rates with effective dates.",
+    "addButton": "+ Add Tax Rule",
+    "editTitle": "Edit Tax Rule",
+    "createTitle": "Add New Tax Rule",
+    "listTitle": "Tax Rules List",
+    "noRules": "No tax rules yet. Click \"Add Tax Rule\" to get started.",
+    "form": {
+      "taxType": "Tax Type *",
+      "taxTypePlaceholder": "Select tax type",
+      "rate": "Rate (%) *",
+      "ratePlaceholder": "e.g., 5, 10, 8",
+      "effectiveFrom": "Effective From *",
+      "effectiveTo": "Effective To (optional)",
+      "description": "Description",
+      "descriptionPlaceholder": "e.g., Contractor tax 5% per Decree 126/2020"
+    },
+    "taxTypes": {
+      "VAT_INLAND": "VAT Domestic",
+      "VAT_INTL": "VAT International",
+      "FCT": "Contractor Tax (FCT)"
+    },
+    "columns": {
+      "taxType": "Tax Type",
+      "rate": "Rate",
+      "effectiveFrom": "Effective From",
+      "effectiveTo": "Effective To",
+      "description": "Description",
+      "status": "Status",
+      "actions": "Actions"
+    },
+    "active": "Active",
+    "expired": "Expired"
+  },
+  "roles": {
+    "title": "Role Management",
+    "subtitle": "Create and manage roles, assign permissions to each role.",
+    "addButton": "+ Create New Role",
+    "editTitle": "Edit Role",
+    "createTitle": "Create New Role",
+    "listTitle": "Roles List",
+    "noRoles": "No roles yet.",
+    "form": {
+      "name": "Role Name *",
+      "namePlaceholder": "e.g., accountant, viewer...",
+      "description": "Description",
+      "descriptionPlaceholder": "e.g., Accountant — view expenses and tax only",
+      "permissionsLabel": "Permissions (select on creation)",
+      "createButton": "Create Role"
+    },
+    "permMatrix": {
+      "title": "Permissions for role:",
+      "saveButton": "Save Permissions"
+    },
+    "columns": {
+      "role": "Role",
+      "description": "Description",
+      "permCount": "Permissions",
+      "type": "Type",
+      "actions": "Actions"
+    },
+    "permGroups": {
+      "dashboard": "📊 Dashboard",
+      "inventory": "📦 Inventory",
+      "expenses": "💰 Expenses",
+      "tax": "📋 Tax Rules",
+      "users": "👥 Users",
+      "audit": "📜 Audit Logs",
+      "roles": "🔐 Roles",
+      "invoices": "📄 Invoices",
+      "approvals": "✅ Approvals",
+      "finance": "📈 Finance"
+    },
+    "system": "System",
+    "custom": "Custom",
+    "assignPerms": "Manage Permissions",
+    "editRole": "Edit",
+    "deleteRole": "Delete"
+  },
   "audit": {
-    "title": "Audit History Map",
+    "title": "Audit History",
     "subtitle": "Detailed record of all system events and transactions.",
     "history": "History",
     "description": "Showing {{total}} audit logs",
@@ -136,7 +343,26 @@
     "actionTags": {
       "product": "Product",
       "order": "Order",
-      "user": "User"
+      "user": "User",
+      "approval": "Approval"
+    },
+    "actions": {
+      "CREATE_PRODUCT": "Create Product",
+      "UPDATE_PRODUCT": "Update Product",
+      "DELETE_PRODUCT": "Delete Product",
+      "CREATE_ORDER_IMPORT": "Create Import Order",
+      "CREATE_ORDER_EXPORT": "Create Export Order",
+      "CREATE_TAX_RULE": "Create Tax Rule",
+      "UPDATE_TAX_RULE": "Update Tax Rule",
+      "DELETE_TAX_RULE": "Delete Tax Rule",
+      "CREATE_APPROVAL_REQUEST": "Create Approval Request",
+      "APPROVE_REQUEST": "Approve Request",
+      "REJECT_REQUEST": "Reject Request",
+      "CREATE_INVOICE_FROM_APPROVAL": "Create Invoice from Approval",
+      "CREATE_EXPENSE": "Create Expense",
+      "CREATE_USER": "Create User",
+      "UPDATE_USER": "Update User",
+      "DELETE_USER": "Delete User"
     },
     "dialog": {
       "title": "Audit Log Details",
