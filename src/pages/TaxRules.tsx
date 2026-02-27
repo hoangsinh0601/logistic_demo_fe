@@ -6,6 +6,7 @@ import { Input } from "@/components/atoms/input";
 import { Label } from "@/components/atoms/label";
 import { Button } from "@/components/atoms/button";
 import { Badge } from "@/components/atoms/badge";
+import { Pagination } from "@/components/molecules/Pagination";
 import {
     Select,
     SelectContent,
@@ -47,7 +48,11 @@ const INITIAL_FORM: TaxRuleFormData = {
 
 export const TaxRules: React.FC = () => {
     const { t } = useTranslation();
-    const { data: rules, isLoading } = useGetTaxRules();
+    const [page, setPage] = useState(1);
+    const [limit, setLimit] = useState(20);
+    const { data, isLoading } = useGetTaxRules(page, limit);
+    const rules = data?.items ?? [];
+    const total = data?.total ?? 0;
     const createTaxRule = useCreateTaxRule();
     const updateTaxRule = useUpdateTaxRule();
     const deleteTaxRule = useDeleteTaxRule();
@@ -219,7 +224,7 @@ export const TaxRules: React.FC = () => {
             <Card>
                 <CardHeader>
                     <CardTitle className="text-lg">
-                        {t("taxRules.listTitle")} {rules ? `(${rules.length})` : ""}
+                        {t("taxRules.listTitle")} {total > 0 ? `(${total})` : ""}
                     </CardTitle>
                 </CardHeader>
                 <CardContent>
@@ -326,6 +331,14 @@ export const TaxRules: React.FC = () => {
                             </Table>
                         </div>
                     )}
+
+                    <Pagination
+                        page={page}
+                        limit={limit}
+                        total={total}
+                        onPageChange={setPage}
+                        onLimitChange={setLimit}
+                    />
 
                     {deleteTaxRule.isError && (
                         <p className="text-sm text-red-600 bg-red-50 p-3 rounded-md mt-4">

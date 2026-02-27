@@ -1,8 +1,9 @@
-import React from "react";
+import React, { useState } from "react";
 import { ExpenseForm } from "@/components/organisms/ExpenseForm";
 import { useGetExpenses } from "@/hooks/useExpenses";
 import { useCurrencyDisplay } from "@/hooks/useCurrencyDisplay";
 import { CurrencyToggle } from "@/components/atoms/CurrencyToggle";
+import { Pagination } from "@/components/molecules/Pagination";
 import { useTranslation } from "react-i18next";
 import {
     Table,
@@ -17,8 +18,11 @@ import { Badge } from "@/components/atoms/badge";
 
 export const Expenses: React.FC = () => {
     const { t } = useTranslation();
-    const { data, isLoading } = useGetExpenses();
+    const [page, setPage] = useState(1);
+    const [limit, setLimit] = useState(20);
+    const { data, isLoading } = useGetExpenses(page, limit);
     const expenses = data?.expenses ?? [];
+    const total = data?.total ?? 0;
     const { currency, toggle, format, isLoading: rateLoading, rate } = useCurrencyDisplay();
 
     return (
@@ -100,6 +104,13 @@ export const Expenses: React.FC = () => {
                             </Table>
                         </div>
                     )}
+                    <Pagination
+                        page={page}
+                        limit={limit}
+                        total={total}
+                        onPageChange={setPage}
+                        onLimitChange={setLimit}
+                    />
                 </CardContent>
             </Card>
         </div>

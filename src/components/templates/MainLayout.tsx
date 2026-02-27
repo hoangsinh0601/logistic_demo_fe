@@ -34,7 +34,7 @@ export const MainLayout: React.FC = () => {
     return (
         <div className="flex min-h-screen bg-muted/40">
             {/* Sidebar */}
-            <aside className="hidden sm:flex w-64 flex-col border-r bg-card relative">
+            <aside className="hidden sm:flex w-64 flex-col border-r bg-card sticky top-0 h-screen overflow-y-auto">
                 <div className="flex items-center gap-2 p-6">
                     <Package className="h-6 w-6 text-primary" />
                     <h2 className="text-xl font-bold tracking-tight">Inventory App</h2>

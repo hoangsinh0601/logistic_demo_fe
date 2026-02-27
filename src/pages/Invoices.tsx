@@ -1,7 +1,8 @@
-import React from "react";
+import React, { useState } from "react";
 import { useGetInvoices } from "@/hooks/useInvoices";
 import { useCurrencyDisplay } from "@/hooks/useCurrencyDisplay";
 import { CurrencyToggle } from "@/components/atoms/CurrencyToggle";
+import { Pagination } from "@/components/molecules/Pagination";
 import { useTranslation } from "react-i18next";
 import {
     Table,
@@ -16,8 +17,11 @@ import { Badge } from "@/components/atoms/badge";
 
 export const Invoices: React.FC = () => {
     const { t } = useTranslation();
-    const { data, isLoading } = useGetInvoices("APPROVED");
+    const [page, setPage] = useState(1);
+    const [limit, setLimit] = useState(20);
+    const { data, isLoading } = useGetInvoices("APPROVED", page, limit);
     const invoices = data?.invoices ?? [];
+    const total = data?.total ?? 0;
     const { currency, toggle, format, isLoading: rateLoading, rate } = useCurrencyDisplay();
 
     return (
@@ -47,30 +51,23 @@ export const Invoices: React.FC = () => {
                                 <TableHeader>
                                     <TableRow>
                                         <TableHead>{t("invoices.columns.invoiceNo")}</TableHead>
-                                        <TableHead>{t("invoices.columns.type")}</TableHead>
-                                        <TableHead>{t("invoices.columns.tax")}</TableHead>
+                                        <TableHead>{t("invoices.columns.referenceType")}</TableHead>
                                         <TableHead className="text-right">{t("invoices.columns.subtotal")}</TableHead>
                                         <TableHead className="text-right">{t("invoices.columns.taxAmount")}</TableHead>
                                         <TableHead className="text-right">{t("invoices.columns.sideFees")}</TableHead>
                                         <TableHead className="text-right">{t("invoices.columns.totalAmount")}</TableHead>
-                                        <TableHead>{t("invoices.columns.issuedDate")}</TableHead>
+                                        <TableHead>{t("invoices.columns.status")}</TableHead>
+                                        <TableHead>{t("invoices.columns.createdAt")}</TableHead>
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
                                     {invoices.map((inv) => (
                                         <TableRow key={inv.id}>
-                                            <TableCell className="font-mono text-sm">
+                                            <TableCell className="font-mono font-medium">
                                                 {inv.invoice_no}
                                             </TableCell>
                                             <TableCell>
-                                                <Badge variant="outline">
-                                                    {t(`invoices.refTypes.${inv.reference_type}`) || inv.reference_type}
-                                                </Badge>
-                                            </TableCell>
-                                            <TableCell className="text-sm">
-                                                {inv.tax_type
-                                                    ? `${inv.tax_type} (${(parseFloat(inv.tax_rate || "0") * 100).toFixed(0)}%)`
-                                                    : "—"}
+                                                <Badge variant="outline">{t(`invoices.refTypes.${inv.reference_type}`) || inv.reference_type}</Badge>
                                             </TableCell>
                                             <TableCell className="text-right font-mono">
                                                 {format(inv.subtotal)}
@@ -84,8 +81,13 @@ export const Invoices: React.FC = () => {
                                             <TableCell className="text-right font-mono font-semibold">
                                                 {format(inv.total_amount)}
                                             </TableCell>
+                                            <TableCell>
+                                                <Badge variant={inv.approval_status === "APPROVED" ? "default" : "secondary"}>
+                                                    {t(`invoices.statuses.${inv.approval_status}`) || inv.approval_status}
+                                                </Badge>
+                                            </TableCell>
                                             <TableCell className="text-sm text-muted-foreground">
-                                                {new Date(inv.created_at).toLocaleDateString("en-US")}
+                                                {new Date(inv.created_at).toLocaleDateString("vi-VN")}
                                             </TableCell>
                                         </TableRow>
                                     ))}
@@ -93,6 +95,13 @@ export const Invoices: React.FC = () => {
                             </Table>
                         </div>
                     )}
+                    <Pagination
+                        page={page}
+                        limit={limit}
+                        total={total}
+                        onPageChange={setPage}
+                        onLimitChange={setLimit}
+                    />
                 </CardContent>
             </Card>
         </div>

@@ -7,16 +7,36 @@ export const approvalKeys = {
   byStatus: (status: string) => ["approvals", status] as const,
 };
 
-export function useGetApprovals(status?: string) {
-  return useQuery<ApprovalRequest[]>({
-    queryKey: status ? approvalKeys.byStatus(status) : approvalKeys.all,
+// ------------- TYPES -------------
+interface PaginatedApprovals {
+  approvals: ApprovalRequest[];
+  total: number;
+  page: number;
+  limit: number;
+}
+
+export function useGetApprovals(status?: string, page = 1, limit = 20) {
+  return useQuery<PaginatedApprovals>({
+    queryKey: status
+      ? [...approvalKeys.byStatus(status), page, limit]
+      : [...approvalKeys.all, page, limit],
     queryFn: async () => {
       const params = new URLSearchParams();
       if (status) params.set("status", status);
-      params.set("limit", "100");
+      params.set("page", String(page));
+      params.set("limit", String(limit));
       const response = await api.get(`/api/approvals?${params.toString()}`);
       const result = response.data.data;
-      return result?.data || result || [];
+      // Handle both formats: {approvals, total} or {data: [...], total}
+      if (result?.approvals) {
+        return result;
+      }
+      return {
+        approvals: result?.data || result || [],
+        total: result?.total || 0,
+        page,
+        limit,
+      };
     },
   });
 }

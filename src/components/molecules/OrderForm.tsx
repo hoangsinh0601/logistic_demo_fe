@@ -13,7 +13,8 @@ import { Plus, Trash2, ShoppingCart } from 'lucide-react';
 export const OrderForm: React.FC = () => {
     const { data, isLoading } = useGetProducts();
     const products = data?.products ?? [];
-    const { data: taxRules = [] } = useGetTaxRules();
+    const { data: taxData } = useGetTaxRules();
+    const taxRules = taxData?.items ?? [];
     const createOrder = useCreateOrder();
     const { t } = useTranslation();
 

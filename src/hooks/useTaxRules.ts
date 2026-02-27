@@ -12,12 +12,23 @@ export const taxRuleKeys = {
   active: (type: string) => ["tax-rules", "active", type] as const,
 };
 
-export function useGetTaxRules() {
-  return useQuery<TaxRule[]>({
-    queryKey: taxRuleKeys.all,
+// ------------- TYPES -------------
+interface PaginatedTaxRules {
+  items: TaxRule[];
+  page: number;
+  limit: number;
+  total: number;
+  total_pages: number;
+}
+
+export function useGetTaxRules(page = 1, limit = 20) {
+  return useQuery<PaginatedTaxRules>({
+    queryKey: [...taxRuleKeys.all, page, limit],
     queryFn: async () => {
-      const response = await api.get("/api/tax-rules");
-      return response.data.data || [];
+      const response = await api.get(
+        `/api/tax-rules?page=${page}&limit=${limit}`,
+      );
+      return response.data.data;
     },
   });
 }

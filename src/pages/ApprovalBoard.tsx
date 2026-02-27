@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useGetApprovals, useApproveRequest, useRejectRequest } from "@/hooks/useApprovals";
 import { useTranslation } from "react-i18next";
 import { Can } from "@/components/atoms/Can";
+import { Pagination } from "@/components/molecules/Pagination";
 import {
     Table,
     TableBody,
@@ -33,9 +34,13 @@ export const ApprovalBoard: React.FC = () => {
     const [statusFilter, setStatusFilter] = useState<string>("PENDING");
     const [rejectingId, setRejectingId] = useState<string | null>(null);
     const [rejectReason, setRejectReason] = useState("");
+    const [page, setPage] = useState(1);
+    const [limit, setLimit] = useState(20);
 
     const effectiveStatus = statusFilter === "ALL" ? undefined : statusFilter;
-    const { data: approvals, isLoading } = useGetApprovals(effectiveStatus);
+    const { data, isLoading } = useGetApprovals(effectiveStatus, page, limit);
+    const approvals = data?.approvals ?? [];
+    const total = data?.total ?? 0;
     const approveMutation = useApproveRequest();
     const rejectMutation = useRejectRequest();
 
@@ -79,6 +84,12 @@ export const ApprovalBoard: React.FC = () => {
         }
     };
 
+    // Reset to first page on filter change
+    const handleStatusFilterChange = (value: string) => {
+        setStatusFilter(value);
+        setPage(1);
+    };
+
     return (
         <div className="space-y-6">
             <div>
@@ -90,7 +101,7 @@ export const ApprovalBoard: React.FC = () => {
             <div className="flex items-center gap-4">
                 <span className="text-sm font-medium">{t("approvals.filterStatus")}</span>
                 <div className="w-48">
-                    <Select value={statusFilter} onValueChange={setStatusFilter}>
+                    <Select value={statusFilter} onValueChange={handleStatusFilterChange}>
                         <SelectTrigger>
                             <SelectValue placeholder={t("approvals.filterPlaceholder")} />
                         </SelectTrigger>
@@ -213,6 +224,13 @@ export const ApprovalBoard: React.FC = () => {
                             </Table>
                         </div>
                     )}
+                    <Pagination
+                        page={page}
+                        limit={limit}
+                        total={total}
+                        onPageChange={setPage}
+                        onLimitChange={setLimit}
+                    />
                 </CardContent>
             </Card>
         </div>
