@@ -6,12 +6,22 @@ export const expenseKeys = {
   all: ["expenses"] as const,
 };
 
-export function useGetExpenses() {
-  return useQuery<Expense[]>({
-    queryKey: expenseKeys.all,
+// ------------- TYPES -------------
+interface PaginatedExpenses {
+  expenses: Expense[];
+  total: number;
+  page: number;
+  limit: number;
+}
+
+export function useGetExpenses(page = 1, limit = 20) {
+  return useQuery<PaginatedExpenses>({
+    queryKey: [...expenseKeys.all, page, limit],
     queryFn: async () => {
-      const response = await api.get("/api/expenses");
-      return response.data.data || [];
+      const response = await api.get(
+        `/api/expenses?page=${page}&limit=${limit}`,
+      );
+      return response.data.data;
     },
   });
 }

@@ -1,5 +1,7 @@
 import React from "react";
 import { useGetInvoices } from "@/hooks/useInvoices";
+import { useCurrencyDisplay } from "@/hooks/useCurrencyDisplay";
+import { CurrencyToggle } from "@/components/atoms/CurrencyToggle";
 import { useTranslation } from "react-i18next";
 import {
     Table,
@@ -12,21 +14,20 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/atoms/card";
 import { Badge } from "@/components/atoms/badge";
 
-function formatVND(value: string): string {
-    const num = parseFloat(value);
-    if (isNaN(num)) return "0";
-    return new Intl.NumberFormat("vi-VN", { maximumFractionDigits: 0 }).format(Math.round(num));
-}
-
 export const Invoices: React.FC = () => {
     const { t } = useTranslation();
-    const { data: invoices, isLoading } = useGetInvoices("APPROVED");
+    const { data, isLoading } = useGetInvoices("APPROVED");
+    const invoices = data?.invoices ?? [];
+    const { currency, toggle, format, isLoading: rateLoading, rate } = useCurrencyDisplay();
 
     return (
         <div className="space-y-6">
-            <div>
-                <h1 className="text-2xl font-bold tracking-tight">{t("invoices.title")}</h1>
-                <p className="text-muted-foreground">{t("invoices.subtitle")}</p>
+            <div className="flex items-center justify-between">
+                <div>
+                    <h1 className="text-2xl font-bold tracking-tight">{t("invoices.title")}</h1>
+                    <p className="text-muted-foreground">{t("invoices.subtitle")}</p>
+                </div>
+                <CurrencyToggle currency={currency} onToggle={toggle} isLoading={rateLoading} rate={rate} />
             </div>
 
             <Card>
@@ -72,19 +73,19 @@ export const Invoices: React.FC = () => {
                                                     : "—"}
                                             </TableCell>
                                             <TableCell className="text-right font-mono">
-                                                {formatVND(inv.subtotal)} ₫
+                                                {format(inv.subtotal)}
                                             </TableCell>
                                             <TableCell className="text-right font-mono">
-                                                {formatVND(inv.tax_amount)} ₫
+                                                {format(inv.tax_amount)}
                                             </TableCell>
                                             <TableCell className="text-right font-mono">
-                                                {formatVND(inv.side_fees)} ₫
+                                                {format(inv.side_fees)}
                                             </TableCell>
                                             <TableCell className="text-right font-mono font-semibold">
-                                                {formatVND(inv.total_amount)} ₫
+                                                {format(inv.total_amount)}
                                             </TableCell>
                                             <TableCell className="text-sm text-muted-foreground">
-                                                {new Date(inv.created_at).toLocaleDateString("vi-VN")}
+                                                {new Date(inv.created_at).toLocaleDateString("en-US")}
                                             </TableCell>
                                         </TableRow>
                                     ))}

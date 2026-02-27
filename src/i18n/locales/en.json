@@ -232,8 +232,8 @@
       "description": "Description",
       "currency": "Currency",
       "originalAmount": "Original Amount",
-      "convertedVND": "Converted VNĐ",
-      "fctVND": "FCT (VNĐ)",
+      "convertedUSD": "Converted USD",
+      "fctAmount": "FCT Amount",
       "document": "Document",
       "deductible": "Deductible",
       "createdAt": "Created At"

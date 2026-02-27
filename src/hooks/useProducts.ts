@@ -12,13 +12,23 @@ export const productKeys = {
   all: ["products"] as const,
 };
 
+// ------------- TYPES -------------
+interface PaginatedProducts {
+  products: Product[];
+  total: number;
+  page: number;
+  limit: number;
+}
+
 // ------------- QUERIES -------------
-export function useGetProducts() {
-  return useQuery<Product[]>({
-    queryKey: productKeys.all,
+export function useGetProducts(page = 1, limit = 20) {
+  return useQuery<PaginatedProducts>({
+    queryKey: [...productKeys.all, page, limit],
     queryFn: async () => {
-      const response = await api.get("/api/products");
-      return response.data.data || [];
+      const response = await api.get(
+        `/api/products?page=${page}&limit=${limit}`,
+      );
+      return response.data.data;
     },
   });
 }

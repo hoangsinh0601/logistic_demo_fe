@@ -15,12 +15,12 @@ import { useGetActiveTaxRate } from "@/hooks/useTaxRules";
 import type { CurrencyCode, DocumentType, FCTType, CreateExpensePayload } from "@/types";
 
 const CURRENCIES: { value: CurrencyCode; label: string }[] = [
-    { value: "VND", label: "VND - Việt Nam Đồng" },
     { value: "USD", label: "USD - US Dollar" },
     { value: "EUR", label: "EUR - Euro" },
     { value: "JPY", label: "JPY - Japanese Yen" },
     { value: "CNY", label: "CNY - Chinese Yuan" },
     { value: "KRW", label: "KRW - Korean Won" },
+    { value: "VND", label: "VND - Việt Nam Đồng" },
 ];
 
 const DOCUMENT_TYPES: { value: DocumentType; label: string }[] = [
@@ -51,21 +51,15 @@ function safeDivide(a: string, b: string): string {
     return (numA / numB).toFixed(4);
 }
 
-function formatVND(value: string): string {
+function localFormatCurrency(value: string, curr: string): string {
     const num = parseFloat(value);
     if (isNaN(num)) return "0";
-    return new Intl.NumberFormat("vi-VN", { maximumFractionDigits: 0 }).format(Math.round(num));
-}
-
-function formatCurrency(value: string, currency: string): string {
-    const num = parseFloat(value);
-    if (isNaN(num)) return "0";
-    return new Intl.NumberFormat("en-US", { maximumFractionDigits: 2, minimumFractionDigits: 2 }).format(num) + " " + currency;
+    return new Intl.NumberFormat("en-US", { maximumFractionDigits: 2, minimumFractionDigits: 2 }).format(num) + " " + curr;
 }
 
 export const ExpenseForm: React.FC = () => {
     // Form state
-    const [currency, setCurrency] = useState<CurrencyCode>("VND");
+    const [currency, setCurrency] = useState<CurrencyCode>("USD");
     const [exchangeRate, setExchangeRate] = useState("");
     const [originalAmount, setOriginalAmount] = useState("");
     const [isForeignVendor, setIsForeignVendor] = useState(false);
@@ -86,9 +80,9 @@ export const ExpenseForm: React.FC = () => {
 
     const createExpense = useCreateExpense();
 
-    // Auto-set exchange rate to 1 for VND
+    // Auto-set exchange rate to 1 for USD
     useEffect(() => {
-        if (currency === "VND") {
+        if (currency === "USD") {
             setExchangeRate("1");
         } else {
             setExchangeRate("");
@@ -98,39 +92,39 @@ export const ExpenseForm: React.FC = () => {
     // Preview calculations using safe math
     const preview = useMemo(() => {
         const amount = originalAmount || "0";
-        const rate = currency === "VND" ? "1" : (exchangeRate || "0");
+        const rate = currency === "USD" ? "1" : (exchangeRate || "0");
         const fctPercent = effectiveFctRate;
 
-        const convertedVND = safeMultiply(amount, rate);
+        const convertedUSD = safeMultiply(amount, rate);
         const fctRateDecimal = (parseFloat(fctPercent) / 100).toFixed(6);
 
-        let fctAmountVND = "0";
+        let fctAmount = "0";
         if (isForeignVendor && parseFloat(fctPercent) > 0) {
             if (fctType === "NET") {
-                fctAmountVND = safeMultiply(convertedVND, fctRateDecimal);
+                fctAmount = safeMultiply(convertedUSD, fctRateDecimal);
             } else {
                 // GROSS: fct = converted * rate / (1 + rate)
                 const rateDecimal = parseFloat(fctRateDecimal);
                 const divisor = (1 + rateDecimal).toFixed(6);
-                fctAmountVND = safeDivide(safeMultiply(convertedVND, fctRateDecimal), divisor);
+                fctAmount = safeDivide(safeMultiply(convertedUSD, fctRateDecimal), divisor);
             }
         }
 
-        const fctInOriginal = parseFloat(rate) > 0 ? safeDivide(fctAmountVND, rate) : "0";
+        const fctInOriginal = parseFloat(rate) > 0 ? safeDivide(fctAmount, rate) : "0";
         const totalPayable = (parseFloat(amount) + parseFloat(fctInOriginal)).toFixed(4);
 
         // VAT preview
-        let vatAmountVND = "0";
+        let vatAmount = "0";
         if (documentType === "VAT_INVOICE" && activeVatRate) {
-            const vatRateDecimal = activeVatRate.rate; // already decimal from server
-            vatAmountVND = safeMultiply(convertedVND, vatRateDecimal);
+            const vatRateDecimal = activeVatRate.rate;
+            vatAmount = safeMultiply(convertedUSD, vatRateDecimal);
         }
 
         return {
-            convertedVND,
-            fctAmountVND,
+            convertedUSD,
+            fctAmount,
             totalPayable,
-            vatAmountVND,
+            vatAmount,
         };
     }, [originalAmount, exchangeRate, currency, isForeignVendor, fctType, effectiveFctRate, documentType, activeVatRate]);
 
@@ -139,7 +133,7 @@ export const ExpenseForm: React.FC = () => {
 
         const payload: CreateExpensePayload = {
             currency,
-            exchange_rate: currency === "VND" ? "1" : exchangeRate,
+            exchange_rate: currency === "USD" ? "1" : exchangeRate,
             original_amount: originalAmount,
             is_foreign_vendor: isForeignVendor,
             document_type: documentType,
@@ -157,7 +151,7 @@ export const ExpenseForm: React.FC = () => {
         createExpense.mutate(payload, {
             onSuccess: () => {
                 // Reset form
-                setCurrency("VND");
+                setCurrency("USD");
                 setExchangeRate("");
                 setOriginalAmount("");
                 setIsForeignVendor(false);
@@ -171,7 +165,7 @@ export const ExpenseForm: React.FC = () => {
     };
 
     const isVATInvoice = documentType === "VAT_INVOICE";
-    const isNotVND = currency !== "VND";
+    const isNotUSD = currency !== "USD";
 
     return (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -232,25 +226,25 @@ export const ExpenseForm: React.FC = () => {
                                 </div>
                             </div>
 
-                            {/* Exchange Rate — only shown when not VND */}
-                            {isNotVND && (
+                            {/* Exchange Rate — only shown when not USD */}
+                            {isNotUSD && (
                                 <div className="space-y-2 animate-in fade-in slide-in-from-top-2 duration-300">
                                     <Label htmlFor="exchange_rate" className="text-orange-700">
-                                        Tỷ giá quy đổi ra VNĐ *
+                                        Exchange Rate to USD *
                                     </Label>
                                     <Input
                                         id="exchange_rate"
                                         type="number"
                                         step="0.000001"
                                         min="0"
-                                        placeholder="VD: 24850 (1 USD = 24,850 VNĐ)"
+                                        placeholder="e.g. 0.000040 (1 VND = 0.000040 USD)"
                                         value={exchangeRate}
                                         onChange={(e) => setExchangeRate(e.target.value)}
                                         required
                                         className="border-orange-300 focus-visible:ring-orange-400"
                                     />
                                     <p className="text-xs text-muted-foreground">
-                                        Nhập tỷ giá theo Ngân hàng Nhà nước tại ngày giao dịch
+                                        Enter the exchange rate to convert to USD at the transaction date
                                     </p>
                                 </div>
                             )}
@@ -421,29 +415,29 @@ export const ExpenseForm: React.FC = () => {
                     {/* Total Payable in Original Currency */}
                     <div className="rounded-lg bg-gradient-to-br from-blue-50 to-indigo-50 p-4 space-y-1">
                         <p className="text-xs font-medium text-blue-600 uppercase tracking-wider">
-                            Tổng thanh toán ({currency})
+                            Total Payable ({currency})
                         </p>
                         <p className="text-2xl font-bold text-blue-900">
-                            {formatCurrency(preview.totalPayable, currency)}
+                            {localFormatCurrency(preview.totalPayable, currency)}
                         </p>
                         {isForeignVendor && (
                             <p className="text-xs text-blue-600">
-                                = Gốc + FCT quy đổi
+                                = Original + FCT converted
                             </p>
                         )}
                     </div>
 
-                    {/* Converted to VND */}
+                    {/* Converted to USD */}
                     <div className="rounded-lg bg-gradient-to-br from-emerald-50 to-teal-50 p-4 space-y-1">
                         <p className="text-xs font-medium text-emerald-600 uppercase tracking-wider">
-                            Quy đổi ra VNĐ
+                            Converted to USD
                         </p>
                         <p className="text-2xl font-bold text-emerald-900">
-                            {formatVND(preview.convertedVND)} ₫
+                            ${parseFloat(preview.convertedUSD).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                         </p>
-                        {isNotVND && exchangeRate && (
+                        {isNotUSD && exchangeRate && (
                             <p className="text-xs text-emerald-600">
-                                Tỷ giá: 1 {currency} = {new Intl.NumberFormat("vi-VN").format(parseFloat(exchangeRate))} VNĐ
+                                Rate: 1 {currency} = {parseFloat(exchangeRate).toLocaleString("en-US", { maximumFractionDigits: 6 })} USD
                             </p>
                         )}
                     </div>
@@ -452,28 +446,28 @@ export const ExpenseForm: React.FC = () => {
                     {isForeignVendor && (
                         <div className="rounded-lg bg-gradient-to-br from-amber-50 to-orange-50 p-4 space-y-1 animate-in fade-in duration-300">
                             <p className="text-xs font-medium text-amber-600 uppercase tracking-wider">
-                                Thuế nhà thầu khấu trừ ({fctType})
+                                FCT Deducted ({fctType})
                             </p>
                             <p className="text-2xl font-bold text-amber-900">
-                                {formatVND(preview.fctAmountVND)} ₫
+                                ${parseFloat(preview.fctAmount).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                             </p>
                             <p className="text-xs text-amber-600">
-                                FCT {effectiveFctRate}% ({fctType === "NET" ? "trên giá trước thuế" : "trên giá đã gồm thuế"})
+                                FCT {effectiveFctRate}% ({fctType === "NET" ? "on pre-tax price" : "on tax-inclusive price"})
                             </p>
                         </div>
                     )}
 
                     {/* VAT Amount */}
-                    {documentType === "VAT_INVOICE" && parseFloat(preview.vatAmountVND) > 0 && (
+                    {documentType === "VAT_INVOICE" && parseFloat(preview.vatAmount) > 0 && (
                         <div className="rounded-lg bg-gradient-to-br from-green-50 to-lime-50 p-4 space-y-1 animate-in fade-in duration-300">
                             <p className="text-xs font-medium text-green-600 uppercase tracking-wider">
-                                VAT ({isForeignVendor ? "Quốc tế" : "Nội địa"})
+                                VAT ({isForeignVendor ? "International" : "Domestic"})
                             </p>
                             <p className="text-2xl font-bold text-green-900">
-                                {formatVND(preview.vatAmountVND)} ₫
+                                ${parseFloat(preview.vatAmount).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                             </p>
                             <p className="text-xs text-green-600">
-                                {activeVatRate ? `${(parseFloat(activeVatRate.rate) * 100).toFixed(2)}% (từ hệ thống)` : "Chưa có thuế suất VAT"}
+                                {activeVatRate ? `${(parseFloat(activeVatRate.rate) * 100).toFixed(2)}% (from system)` : "No VAT rate configured"}
                             </p>
                         </div>
                     )}

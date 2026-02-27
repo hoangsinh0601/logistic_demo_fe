@@ -163,7 +163,7 @@ export const ApprovalBoard: React.FC = () => {
                                             </TableCell>
                                             <TableCell>
                                                 {req.status === "PENDING" && (
-                                                    <Can permission="APPROVE_INVOICE">
+                                                    <Can permission="approvals.approve">
                                                         <div className="flex flex-col gap-2">
                                                             <div className="flex gap-2">
                                                                 <Button

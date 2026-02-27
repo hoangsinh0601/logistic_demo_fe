@@ -16,7 +16,7 @@ interface CanProps {
  * Reads the user's permissions from AuthContext and conditionally renders children.
  * 
  * Usage:
- *   <Can permission="APPROVE_INVOICE">
+ *   <Can permission="approvals.approve">
  *     <Button>Duyệt</Button>
  *   </Can>
  */

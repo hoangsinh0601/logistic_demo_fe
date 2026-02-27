@@ -128,14 +128,14 @@ export interface Expense {
   currency: string;
   exchange_rate: string;
   original_amount: string;
-  converted_amount_vnd: string;
+  converted_amount_usd: string;
   is_foreign_vendor: boolean;
   fct_type: string;
   fct_rate: string;
-  fct_amount_vnd: string;
+  fct_amount: string;
   total_payable: string;
   vat_rate: string;
-  vat_amount_vnd: string;
+  vat_amount: string;
   document_type: DocumentType;
   vendor_tax_code: string | null;
   document_url: string;

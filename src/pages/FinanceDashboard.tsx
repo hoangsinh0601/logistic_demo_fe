@@ -1,6 +1,8 @@
 import React, { useState, useMemo } from "react";
 import { useGetRevenue } from "@/hooks/useRevenue";
 import { useGetStatistics, type ProductRanking } from "@/hooks/useStatistics";
+import { useCurrencyDisplay } from "@/hooks/useCurrencyDisplay";
+import { CurrencyToggle } from "@/components/atoms/CurrencyToggle";
 import { useTranslation } from "react-i18next";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/atoms/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/atoms/select";
@@ -25,15 +27,10 @@ import {
 } from "recharts";
 import { ArrowDownRight, ArrowUpRight, Package } from "lucide-react";
 
-function formatUSD(value: string | number): string {
-    const num = typeof value === "string" ? parseFloat(value) : value;
-    if (isNaN(num)) return "$0";
-    return new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 }).format(Math.round(num));
-}
-
 export const FinanceDashboard: React.FC = () => {
     const { t } = useTranslation();
     const [groupBy, setGroupBy] = useState("month");
+    const { currency, toggle, format, formatShort, isLoading: rateLoading, rate } = useCurrencyDisplay();
 
     const { startDate, endDate } = useMemo(() => {
         const now = new Date();
@@ -133,7 +130,7 @@ export const FinanceDashboard: React.FC = () => {
                             <TableCell className="font-mono text-sm text-muted-foreground">{item.product_sku}</TableCell>
                             <TableCell className="font-medium">{item.product_name}</TableCell>
                             <TableCell className="text-right font-mono">{item.total_quantity.toLocaleString()}</TableCell>
-                            <TableCell className="text-right font-mono">{formatUSD(item.total_value)}</TableCell>
+                            <TableCell className="text-right font-mono">{format(item.total_value)}</TableCell>
                         </TableRow>
                     ))}
                 </TableBody>
@@ -149,18 +146,21 @@ export const FinanceDashboard: React.FC = () => {
                     <h1 className="text-2xl font-bold tracking-tight">{t("dashboard.title")}</h1>
                     <p className="text-muted-foreground">{t("dashboard.subtitle")}</p>
                 </div>
-                <div className="w-48">
-                    <Select value={groupBy} onValueChange={setGroupBy}>
-                        <SelectTrigger>
-                            <SelectValue placeholder={t("dashboard.groupBy")} />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="week">{t("dashboard.byWeek")}</SelectItem>
-                            <SelectItem value="month">{t("dashboard.byMonth")}</SelectItem>
-                            <SelectItem value="quarter">{t("dashboard.byQuarter")}</SelectItem>
-                            <SelectItem value="year">{t("dashboard.byYear")}</SelectItem>
-                        </SelectContent>
-                    </Select>
+                <div className="flex items-center gap-4">
+                    <CurrencyToggle currency={currency} onToggle={toggle} isLoading={rateLoading} rate={rate} />
+                    <div className="w-48">
+                        <Select value={groupBy} onValueChange={setGroupBy}>
+                            <SelectTrigger>
+                                <SelectValue placeholder={t("dashboard.groupBy")} />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="week">{t("dashboard.byWeek")}</SelectItem>
+                                <SelectItem value="month">{t("dashboard.byMonth")}</SelectItem>
+                                <SelectItem value="quarter">{t("dashboard.byQuarter")}</SelectItem>
+                                <SelectItem value="year">{t("dashboard.byYear")}</SelectItem>
+                            </SelectContent>
+                        </Select>
+                    </div>
                 </div>
             </div>
 
@@ -171,7 +171,7 @@ export const FinanceDashboard: React.FC = () => {
                         <CardTitle className="text-sm font-medium text-muted-foreground">{t("dashboard.revenue")}</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <p className="text-xl font-bold text-green-600">{formatUSD(totals.revenue)}</p>
+                        <p className="text-lg font-bold text-green-600 truncate" title={format(totals.revenue)}>{formatShort(totals.revenue)}</p>
                     </CardContent>
                 </Card>
                 <Card>
@@ -179,7 +179,7 @@ export const FinanceDashboard: React.FC = () => {
                         <CardTitle className="text-sm font-medium text-muted-foreground">{t("dashboard.expense")}</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <p className="text-xl font-bold text-red-600">{formatUSD(totals.expense)}</p>
+                        <p className="text-lg font-bold text-red-600 truncate" title={format(totals.expense)}>{formatShort(totals.expense)}</p>
                     </CardContent>
                 </Card>
                 <Card>
@@ -187,8 +187,8 @@ export const FinanceDashboard: React.FC = () => {
                         <CardTitle className="text-sm font-medium text-muted-foreground">{t("dashboard.profit")}</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <p className={`text-xl font-bold ${totals.profit >= 0 ? "text-green-600" : "text-red-600"}`}>
-                            {formatUSD(totals.profit)}
+                        <p className={`text-lg font-bold truncate ${totals.profit >= 0 ? "text-green-600" : "text-red-600"}`} title={format(totals.profit)}>
+                            {formatShort(totals.profit)}
                         </p>
                     </CardContent>
                 </Card>
@@ -197,7 +197,7 @@ export const FinanceDashboard: React.FC = () => {
                         <CardTitle className="text-sm font-medium text-muted-foreground">{t("dashboard.taxCollected")}</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <p className="text-xl font-bold text-blue-600">{formatUSD(totals.taxCollected)}</p>
+                        <p className="text-lg font-bold text-blue-600 truncate" title={format(totals.taxCollected)}>{formatShort(totals.taxCollected)}</p>
                     </CardContent>
                 </Card>
                 <Card>
@@ -205,7 +205,7 @@ export const FinanceDashboard: React.FC = () => {
                         <CardTitle className="text-sm font-medium text-muted-foreground">{t("dashboard.taxPaid")}</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <p className="text-xl font-bold text-orange-600">{formatUSD(totals.taxPaid)}</p>
+                        <p className="text-lg font-bold text-orange-600 truncate" title={format(totals.taxPaid)}>{formatShort(totals.taxPaid)}</p>
                     </CardContent>
                 </Card>
                 <Card>
@@ -213,7 +213,7 @@ export const FinanceDashboard: React.FC = () => {
                         <CardTitle className="text-sm font-medium text-muted-foreground">{t("dashboard.sideFees")}</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <p className="text-xl font-bold text-gray-600">{formatUSD(totals.sideFees)}</p>
+                        <p className="text-lg font-bold text-gray-600 truncate" title={format(totals.sideFees)}>{formatShort(totals.sideFees)}</p>
                     </CardContent>
                 </Card>
             </div>
@@ -295,7 +295,7 @@ export const FinanceDashboard: React.FC = () => {
                                     }
                                 />
                                 <Tooltip
-                                    formatter={(value: number | undefined) => (value != null ? formatUSD(value) : "—")}
+                                    formatter={(value: number | undefined) => (value != null ? formatShort(value) : "—")}
                                     labelFormatter={(label) => new Date(String(label)).toLocaleDateString("vi-VN")}
                                 />
                                 <Legend />

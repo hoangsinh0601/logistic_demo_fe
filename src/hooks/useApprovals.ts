@@ -15,7 +15,8 @@ export function useGetApprovals(status?: string) {
       if (status) params.set("status", status);
       params.set("limit", "100");
       const response = await api.get(`/api/approvals?${params.toString()}`);
-      return response.data.data || [];
+      const result = response.data.data;
+      return result?.data || result || [];
     },
   });
 }

@@ -11,7 +11,8 @@ import { Label } from '@/components/atoms/label';
 import { Plus, Trash2, ShoppingCart } from 'lucide-react';
 
 export const OrderForm: React.FC = () => {
-    const { data: products = [], isLoading } = useGetProducts();
+    const { data, isLoading } = useGetProducts();
+    const products = data?.products ?? [];
     const { data: taxRules = [] } = useGetTaxRules();
     const createOrder = useCreateOrder();
     const { t } = useTranslation();

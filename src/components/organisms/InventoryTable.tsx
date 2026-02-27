@@ -20,7 +20,8 @@ import { DataTable, usePagination } from '@/components/molecules/DataTable';
 import type { ColumnDef } from '@/components/molecules/DataTable';
 
 export const InventoryTable: React.FC = () => {
-    const { data: products = [], isLoading, error } = useGetProducts();
+    const { data, isLoading, error } = useGetProducts();
+    const products = data?.products ?? [];
     const deleteProduct = useDeleteProduct();
     const { t } = useTranslation();
     const { page, limit, setPage, setLimit } = usePagination(10);

@@ -232,8 +232,8 @@
       "description": "Mô tả",
       "currency": "Tiền tệ",
       "originalAmount": "Số tiền gốc",
-      "convertedVND": "Quy đổi VNĐ",
-      "fctVND": "FCT (VNĐ)",
+      "convertedUSD": "Quy đổi USD",
+      "fctAmount": "FCT",
       "document": "Chứng từ",
       "deductible": "Khấu trừ",
       "createdAt": "Ngày tạo"

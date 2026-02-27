@@ -7,13 +7,26 @@ export const invoiceKeys = {
   byStatus: (status: string) => ["invoices", status] as const,
 };
 
-export function useGetInvoices(status?: string) {
-  return useQuery<Invoice[]>({
-    queryKey: status ? invoiceKeys.byStatus(status) : invoiceKeys.all,
+// ------------- TYPES -------------
+interface PaginatedInvoices {
+  invoices: Invoice[];
+  total: number;
+  page: number;
+  limit: number;
+}
+
+export function useGetInvoices(status?: string, page = 1, limit = 20) {
+  return useQuery<PaginatedInvoices>({
+    queryKey: status
+      ? [...invoiceKeys.byStatus(status), page, limit]
+      : [...invoiceKeys.all, page, limit],
     queryFn: async () => {
-      const params = status ? `?status=${status}` : "";
-      const response = await api.get(`/api/invoices${params}`);
-      return response.data.data || [];
+      const params = new URLSearchParams();
+      if (status) params.set("status", status);
+      params.set("page", String(page));
+      params.set("limit", String(limit));
+      const response = await api.get(`/api/invoices?${params.toString()}`);
+      return response.data.data;
     },
   });
 }

@@ -1,6 +1,8 @@
 import React from "react";
 import { ExpenseForm } from "@/components/organisms/ExpenseForm";
 import { useGetExpenses } from "@/hooks/useExpenses";
+import { useCurrencyDisplay } from "@/hooks/useCurrencyDisplay";
+import { CurrencyToggle } from "@/components/atoms/CurrencyToggle";
 import { useTranslation } from "react-i18next";
 import {
     Table,
@@ -13,21 +15,20 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/atoms/card";
 import { Badge } from "@/components/atoms/badge";
 
-function formatVND(value: string): string {
-    const num = parseFloat(value);
-    if (isNaN(num)) return "0";
-    return new Intl.NumberFormat("vi-VN", { maximumFractionDigits: 0 }).format(Math.round(num));
-}
-
 export const Expenses: React.FC = () => {
     const { t } = useTranslation();
-    const { data: expenses, isLoading } = useGetExpenses();
+    const { data, isLoading } = useGetExpenses();
+    const expenses = data?.expenses ?? [];
+    const { currency, toggle, format, isLoading: rateLoading, rate } = useCurrencyDisplay();
 
     return (
         <div className="space-y-8">
-            <div>
-                <h1 className="text-2xl font-bold tracking-tight">{t("expenses.title")}</h1>
-                <p className="text-muted-foreground">{t("expenses.subtitle")}</p>
+            <div className="flex items-center justify-between">
+                <div>
+                    <h1 className="text-2xl font-bold tracking-tight">{t("expenses.title")}</h1>
+                    <p className="text-muted-foreground">{t("expenses.subtitle")}</p>
+                </div>
+                <CurrencyToggle currency={currency} onToggle={toggle} isLoading={rateLoading} rate={rate} />
             </div>
 
             {/* Expense Form */}
@@ -53,8 +54,8 @@ export const Expenses: React.FC = () => {
                                         <TableHead>{t("expenses.columns.description")}</TableHead>
                                         <TableHead>{t("expenses.columns.currency")}</TableHead>
                                         <TableHead className="text-right">{t("expenses.columns.originalAmount")}</TableHead>
-                                        <TableHead className="text-right">{t("expenses.columns.convertedVND")}</TableHead>
-                                        <TableHead className="text-right">{t("expenses.columns.fctVND")}</TableHead>
+                                        <TableHead className="text-right">{t("expenses.columns.convertedUSD")}</TableHead>
+                                        <TableHead className="text-right">{t("expenses.columns.fctAmount")}</TableHead>
                                         <TableHead>{t("expenses.columns.document")}</TableHead>
                                         <TableHead>{t("expenses.columns.deductible")}</TableHead>
                                         <TableHead>{t("expenses.columns.createdAt")}</TableHead>
@@ -70,13 +71,13 @@ export const Expenses: React.FC = () => {
                                                 <Badge variant="outline">{exp.currency}</Badge>
                                             </TableCell>
                                             <TableCell className="text-right font-mono">
-                                                {parseFloat(exp.original_amount).toLocaleString("en-US", { minimumFractionDigits: 2 })}
+                                                {format(exp.original_amount)}
                                             </TableCell>
                                             <TableCell className="text-right font-mono">
-                                                {formatVND(exp.converted_amount_vnd)} ₫
+                                                {format(exp.converted_amount_usd)}
                                             </TableCell>
                                             <TableCell className="text-right font-mono">
-                                                {exp.is_foreign_vendor ? `${formatVND(exp.fct_amount_vnd)} ₫` : "—"}
+                                                {exp.is_foreign_vendor ? format(exp.fct_amount) : "—"}
                                             </TableCell>
                                             <TableCell>
                                                 <Badge variant={exp.document_type === "VAT_INVOICE" ? "default" : "secondary"}>
@@ -91,7 +92,7 @@ export const Expenses: React.FC = () => {
                                                 )}
                                             </TableCell>
                                             <TableCell className="text-sm text-muted-foreground">
-                                                {new Date(exp.created_at).toLocaleDateString("vi-VN")}
+                                                {new Date(exp.created_at).toLocaleDateString("en-US")}
                                             </TableCell>
                                         </TableRow>
                                     ))}
