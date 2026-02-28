@@ -1,4 +1,9 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import {
+  useQuery,
+  useMutation,
+  useQueryClient,
+  useInfiniteQuery,
+} from "@tanstack/react-query";
 import { api } from "@/api/api";
 import type {
   Product,
@@ -10,6 +15,7 @@ import type {
 // ------------- KEYS -------------
 export const productKeys = {
   all: ["products"] as const,
+  search: (term: string) => ["products", "search", term] as const,
 };
 
 // ------------- TYPES -------------
@@ -30,6 +36,26 @@ export function useGetProducts(page = 1, limit = 20) {
       );
       return response.data.data;
     },
+  });
+}
+
+export function useSearchProducts(search: string, limit = 20) {
+  return useInfiniteQuery<PaginatedProducts>({
+    queryKey: productKeys.search(search),
+    queryFn: async ({ pageParam }) => {
+      const params = new URLSearchParams({
+        page: String(pageParam),
+        limit: String(limit),
+      });
+      if (search) params.set("search", search);
+      const response = await api.get(`/api/products?${params.toString()}`);
+      return response.data.data;
+    },
+    getNextPageParam: (lastPage) => {
+      const loaded = lastPage.page * lastPage.limit;
+      return loaded < lastPage.total ? lastPage.page + 1 : undefined;
+    },
+    initialPageParam: 1,
   });
 }
 

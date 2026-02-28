@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { OrderPayload } from '../../types';
-import { useGetProducts, useCreateOrder } from '@/hooks/useProducts';
+import { useCreateOrder } from '@/hooks/useProducts';
 import { useGetTaxRules } from '@/hooks/useTaxRules';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/atoms/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/atoms/select';
@@ -10,10 +10,8 @@ import { Button } from '@/components/atoms/button';
 import { Label } from '@/components/atoms/label';
 import { Plus, Trash2, ShoppingCart } from 'lucide-react';
 import { getApiErrorMessage } from '@/lib/getApiErrorMessage';
-
+import { ProductSearchSelect } from '@/components/molecules/ProductSearchSelect';
 export const OrderForm: React.FC = () => {
-    const { data, isLoading } = useGetProducts();
-    const products = data?.products ?? [];
     const { data: taxData } = useGetTaxRules();
     const taxRules = taxData?.items ?? [];
     const createOrder = useCreateOrder();
@@ -27,12 +25,14 @@ export const OrderForm: React.FC = () => {
 
     type OrderItemState = {
         productId: string;
+        productName: string;
+        currentStock: number;
         quantity: number;
         price: number;
     };
 
     const [items, setItems] = useState<OrderItemState[]>([
-        { productId: '', quantity: 1, price: 0 }
+        { productId: '', productName: '', currentStock: 0, quantity: 1, price: 0 }
     ]);
 
     const [errorMsg, setErrorMsg] = useState<string | null>(null);
@@ -49,7 +49,7 @@ export const OrderForm: React.FC = () => {
     const taxRate = selectedTaxRule ? parseFloat(selectedTaxRule.rate) : 0;
 
     const handleAddItem = () => {
-        setItems([...items, { productId: '', quantity: 1, price: 0 }]);
+        setItems([...items, { productId: '', productName: '', currentStock: 0, quantity: 1, price: 0 }]);
     };
 
     const handleRemoveItem = (index: number) => {
@@ -79,9 +79,8 @@ export const OrderForm: React.FC = () => {
         // Validate export stock
         if (type === 'EXPORT') {
             for (const item of validItems) {
-                const product = products.find(p => p.id === item.productId);
-                if (product && item.quantity > product.current_stock) {
-                    setErrorMsg(t('orders.validation.notEnoughStock', { name: product.name, stock: product.current_stock }));
+                if (item.quantity > item.currentStock) {
+                    setErrorMsg(t('orders.validation.notEnoughStock', { name: item.productName, stock: item.currentStock }));
                     return;
                 }
             }
@@ -104,7 +103,7 @@ export const OrderForm: React.FC = () => {
             await createOrder.mutateAsync(payload);
             setSuccessMsg(t('common.success'));
             // Reset form
-            setItems([{ productId: '', quantity: 1, price: 0 }]);
+            setItems([{ productId: '', productName: '', currentStock: 0, quantity: 1, price: 0 }]);
             setNote('');
             setTaxRuleId('');
             setSideFees('');
@@ -117,7 +116,7 @@ export const OrderForm: React.FC = () => {
         }
     };
 
-    if (isLoading) {
+    if (!createOrder) {
         return <Button disabled className="w-full h-12"><ShoppingCart className="mr-2 h-5 w-5" />{t('common.loading')}</Button>;
     }
 
@@ -150,7 +149,7 @@ export const OrderForm: React.FC = () => {
                             <Label>{t('orders.type')}</Label>
                             <Select value={type} onValueChange={(val: 'IMPORT' | 'EXPORT') => setType(val)}>
                                 <SelectTrigger>
-                                    <SelectValue placeholder="Select type" />
+                                    <SelectValue placeholder={t('orders.selectTypePlaceholder')} />
                                 </SelectTrigger>
                                 <SelectContent>
                                     <SelectItem value="IMPORT">{t('orders.typeImport')}</SelectItem>
@@ -171,13 +170,13 @@ export const OrderForm: React.FC = () => {
                     {/* Tax Rule & Side Fees */}
                     <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-2">
-                            <Label>Áp dụng Thuế</Label>
+                            <Label>{t('orders.taxLabel')}</Label>
                             <Select value={taxRuleId} onValueChange={setTaxRuleId}>
                                 <SelectTrigger>
-                                    <SelectValue placeholder="Chọn loại thuế (tùy chọn)" />
+                                    <SelectValue placeholder={t('orders.taxPlaceholder')} />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    <SelectItem value="NONE">Không áp dụng thuế</SelectItem>
+                                    <SelectItem value="NONE">{t('orders.taxNone')}</SelectItem>
                                     {activeTaxRules.map(rule => (
                                         <SelectItem key={rule.id} value={rule.id}>
                                             {rule.tax_type} — {(parseFloat(rule.rate) * 100).toFixed(1)}%
@@ -188,7 +187,7 @@ export const OrderForm: React.FC = () => {
                             </Select>
                         </div>
                         <div className="space-y-2">
-                            <Label>Phụ phí (VNĐ)</Label>
+                            <Label>{t('orders.sideFeesLabel')}</Label>
                             <Input
                                 type="number"
                                 min="0"
@@ -202,7 +201,7 @@ export const OrderForm: React.FC = () => {
 
                     <div className="space-y-4">
                         <div className="flex items-center justify-between">
-                            <Label className="text-base font-semibold">Order Items</Label>
+                            <Label className="text-base font-semibold">{t('orders.items')}</Label>
                             <Button
                                 type="button"
                                 variant="outline"
@@ -211,7 +210,7 @@ export const OrderForm: React.FC = () => {
                                 className="h-8 border-dashed"
                             >
                                 <Plus className="mr-2 h-4 w-4" />
-                                Add Item
+                                {t('orders.addItem')}
                             </Button>
                         </div>
 
@@ -220,25 +219,20 @@ export const OrderForm: React.FC = () => {
                                 <div key={index} className="flex items-start gap-4 p-3 border rounded-md bg-muted/20 relative group">
                                     <div className="flex-1 space-y-2">
                                         <Label className="text-xs text-muted-foreground">{t('orders.product')}</Label>
-                                        <Select
+                                        <ProductSearchSelect
                                             value={item.productId}
-                                            onValueChange={(val) => {
-                                                const p = products.find(x => x.id === val);
-                                                handleItemChange(index, 'productId', val);
-                                                if (p) handleItemChange(index, 'price', p.price);
+                                            onSelect={(p) => {
+                                                const newItems = [...items];
+                                                newItems[index] = {
+                                                    ...newItems[index],
+                                                    productId: p.id,
+                                                    productName: p.name,
+                                                    currentStock: p.current_stock,
+                                                    price: p.price,
+                                                };
+                                                setItems(newItems);
                                             }}
-                                        >
-                                            <SelectTrigger className="h-9">
-                                                <SelectValue placeholder={t('orders.chooseProduct')} />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                {products.map(p => (
-                                                    <SelectItem key={p.id} value={p.id}>
-                                                        {p.sku} - {p.name} ({t('orders.stock')}: {p.current_stock})
-                                                    </SelectItem>
-                                                ))}
-                                            </SelectContent>
-                                        </Select>
+                                        />
                                     </div>
 
                                     <div className="w-24 space-y-2">
@@ -290,7 +284,7 @@ export const OrderForm: React.FC = () => {
                         {taxRate > 0 && (
                             <div className="flex justify-between w-full items-center">
                                 <Label className="text-muted-foreground">
-                                    Thuế ({selectedTaxRule?.tax_type} {(taxRate * 100).toFixed(1)}%)
+                                    {t('orders.taxPreview', { type: selectedTaxRule?.tax_type, rate: (taxRate * 100).toFixed(1) })}
                                 </Label>
                                 <span className="text-base font-medium text-blue-600">
                                     +${taxPreview.toLocaleString(undefined, { minimumFractionDigits: 2 })}
@@ -299,14 +293,14 @@ export const OrderForm: React.FC = () => {
                         )}
                         {sideFeesNum > 0 && (
                             <div className="flex justify-between w-full items-center">
-                                <Label className="text-muted-foreground">Phụ phí</Label>
+                                <Label className="text-muted-foreground">{t('orders.sideFeesPreview')}</Label>
                                 <span className="text-base font-medium text-orange-600">
                                     +${sideFeesNum.toLocaleString(undefined, { minimumFractionDigits: 2 })}
                                 </span>
                             </div>
                         )}
                         <div className="flex justify-between w-full items-center border-t pt-2">
-                            <Label className="font-semibold">Tổng cộng (Hóa đơn)</Label>
+                            <Label className="font-semibold">{t('orders.grandTotal')}</Label>
                             <span className="text-lg font-bold tracking-tight">${grandTotal.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
                         </div>
                         <div className="flex justify-end gap-3 w-full mt-2">

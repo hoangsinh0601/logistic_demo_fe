@@ -154,6 +154,7 @@
     "addItem": "Thêm Sản Phẩm",
     "product": "Sản phẩm",
     "chooseProduct": "--- Chọn Sản Phẩm ---",
+    "searchProduct": "Tìm theo tên...",
     "stock": "Tồn",
     "quantity": "Số Lượng",
     "unitPrice": "Đơn Giá ($)",
@@ -161,6 +162,14 @@
     "submitting": "Đang gửi...",
     "submitButton": "Gửi Đơn Hàng",
     "submitCount": "Gửi Đơn Hàng ({{count}} sản phẩm)",
+    "selectTypePlaceholder": "Chọn loại",
+    "taxLabel": "Áp dụng Thuế",
+    "taxPlaceholder": "Chọn loại thuế (tùy chọn)",
+    "taxNone": "Không áp dụng thuế",
+    "taxPreview": "Thuế ({{type}} {{rate}}%)",
+    "sideFeesLabel": "Phụ phí",
+    "sideFeesPreview": "Phụ phí",
+    "grandTotal": "Tổng cộng (Hóa đơn)",
     "validation": {
       "emptyProduct": "Vui lòng chọn ít nhất một sản phẩm.",
       "notEnoughStock": "Không đủ số lượng cho sản phẩm {{name}}. Tồn kho hiện tại: {{stock}}."

@@ -154,6 +154,7 @@
     "addItem": "Add Item",
     "product": "Product",
     "chooseProduct": "--- Choose Product ---",
+    "searchProduct": "Search by name...",
     "stock": "Stock",
     "quantity": "Quantity",
     "unitPrice": "Unit Price ($)",
@@ -161,6 +162,14 @@
     "submitting": "Submitting...",
     "submitButton": "Submit Order",
     "submitCount": "Submit Order ({{count}} items)",
+    "selectTypePlaceholder": "Select type",
+    "taxLabel": "Apply Tax",
+    "taxPlaceholder": "Select tax rule (optional)",
+    "taxNone": "No tax applied",
+    "taxPreview": "Tax ({{type}} {{rate}}%)",
+    "sideFeesLabel": "Side Fees",
+    "sideFeesPreview": "Side Fees",
+    "grandTotal": "Grand Total (Invoice)",
     "validation": {
       "emptyProduct": "Please select at least one product.",
       "notEnoughStock": "Not enough stock for {{name}}. Current total: {{stock}}."
