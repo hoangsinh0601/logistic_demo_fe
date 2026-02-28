@@ -13,6 +13,7 @@ import { Input } from '@/components/atoms/input';
 import { Label } from '@/components/atoms/label';
 import type { Product } from '@/types';
 import { useCreateProduct, useUpdateProduct } from '@/hooks/useProducts';
+import { getApiErrorMessage } from '@/lib/getApiErrorMessage';
 
 interface ProductFormModalProps {
     open: boolean;
@@ -74,12 +75,7 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
             }
             onOpenChange(false);
         } catch (err: unknown) {
-            if (err instanceof Error && 'response' in err) {
-                const axiosError = err as { response?: { data?: { message?: string } } };
-                setErrorMsg(axiosError.response?.data?.message || 'Failed to save product');
-            } else {
-                setErrorMsg('Failed to save product');
-            }
+            setErrorMsg(getApiErrorMessage(err, t, 'errors.saveProductFailed'));
         }
     };
 

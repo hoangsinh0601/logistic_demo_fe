@@ -180,7 +180,7 @@ export const RoleManagement: React.FC = () => {
                                                             onChange={() => togglePerm(p.id)}
                                                             className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
                                                         />
-                                                        {p.name}
+                                                        {t(`roles.permissions.${p.code}`, { defaultValue: p.name })}
                                                     </label>
                                                 ))}
                                             </div>
@@ -232,7 +232,7 @@ export const RoleManagement: React.FC = () => {
                                                 onChange={() => togglePerm(p.id)}
                                                 className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
                                             />
-                                            <span>{p.name}</span>
+                                            <span>{t(`roles.permissions.${p.code}`, { defaultValue: p.name })}</span>
                                             <span className="text-xs text-muted-foreground">({p.code})</span>
                                         </label>
                                     ))}

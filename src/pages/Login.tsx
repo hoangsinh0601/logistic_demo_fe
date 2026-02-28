@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { api } from '../api/api';
+import { getApiErrorMessage } from '../lib/getApiErrorMessage';
 import { useAuth } from '../context/AuthContext';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/atoms/card';
 import { Label } from '@/components/atoms/label';
@@ -34,14 +35,7 @@ export const Login: React.FC = () => {
 
             navigate('/dashboard', { replace: true });
         } catch (err: unknown) {
-            console.error('Login error', err);
-
-            if (err instanceof Error && 'response' in err) {
-                const axiosError = err as { response?: { data?: { message?: string } } };
-                setError(axiosError.response?.data?.message || 'Invalid credentials');
-            } else {
-                setError('Invalid credentials');
-            }
+            setError(getApiErrorMessage(err, t, 'errors.loginFailed'));
         } finally {
             setLoading(false);
         }

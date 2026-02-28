@@ -323,7 +323,26 @@
     "custom": "Custom",
     "assignPerms": "Phân quyền",
     "editRole": "Chỉnh sửa",
-    "deleteRole": "Xóa"
+    "deleteRole": "Xóa",
+    "permissions": {
+      "dashboard.read": "Xem Dashboard & Thống kê TC",
+      "inventory.read": "Xem Kho hàng",
+      "inventory.write": "Quản lý Kho hàng",
+      "expenses.read": "Xem Chi phí",
+      "expenses.write": "Tạo Chi phí",
+      "tax_rules.read": "Xem Thuế suất",
+      "tax_rules.write": "Quản lý Thuế suất",
+      "users.read": "Xem Người dùng",
+      "users.write": "Quản lý Người dùng",
+      "users.delete": "Xóa Người dùng",
+      "audit.read": "Xem Lịch sử hoạt động",
+      "roles.manage": "Quản lý Phân quyền",
+      "invoices.read": "Xem Hóa đơn",
+      "invoices.write": "Tạo Hóa đơn",
+      "approvals.read": "Xem Yêu cầu duyệt",
+      "approvals.approve": "Duyệt / Từ chối yêu cầu",
+      "finance.read": "Xem Báo cáo Tài chính"
+    }
   },
   "audit": {
     "title": "Lịch Sử Hoạt Động",
@@ -359,6 +378,8 @@
       "APPROVE_REQUEST": "Duyệt yêu cầu",
       "REJECT_REQUEST": "Từ chối yêu cầu",
       "CREATE_INVOICE_FROM_APPROVAL": "Tạo hóa đơn từ duyệt",
+      "APPROVE_INVOICE": "Duyệt hóa đơn",
+      "REJECT_INVOICE": "Từ chối hóa đơn",
       "CREATE_EXPENSE": "Tạo chi phí",
       "CREATE_USER": "Tạo người dùng",
       "UPDATE_USER": "Cập nhật người dùng",
@@ -409,5 +430,23 @@
       "updating": "Đang lưu...",
       "usernamePlaceholder": "Nhập tên đăng nhập"
     }
+  },
+  "errors": {
+    "invalidCredentials": "Email hoặc mật khẩu không đúng. Vui lòng thử lại.",
+    "loginFailed": "Không thể đăng nhập. Vui lòng thử lại sau.",
+    "saveProductFailed": "Lưu sản phẩm thất bại. Vui lòng thử lại.",
+    "saveUserFailed": "Lưu người dùng thất bại. Vui lòng thử lại.",
+    "createOrderFailed": "Tạo đơn hàng thất bại. Vui lòng thử lại.",
+    "deleteProductFailed": "Xóa sản phẩm thất bại. Vui lòng thử lại.",
+    "deleteUserFailed": "Xóa người dùng thất bại. Vui lòng thử lại.",
+    "deleteProductConfirm": "Bạn có chắc chắn muốn xóa sản phẩm này?",
+    "deleteUserConfirm": "Bạn có chắc chắn muốn xóa người dùng này?",
+    "forbidden": "Bạn không có quyền thực hiện thao tác này.",
+    "conflict": "Thao tác này xung đột với dữ liệu hiện có. Vui lòng tải lại và thử lại.",
+    "validationFailed": "Dữ liệu gửi lên không hợp lệ. Vui lòng kiểm tra lại.",
+    "tooManyRequests": "Quá nhiều yêu cầu. Vui lòng đợi một lát rồi thử lại.",
+    "serverError": "Lỗi máy chủ. Vui lòng thử lại sau.",
+    "networkError": "Lỗi mạng. Vui lòng kiểm tra kết nối của bạn.",
+    "unknownError": "Đã xảy ra lỗi không mong muốn. Vui lòng thử lại."
   }
 }

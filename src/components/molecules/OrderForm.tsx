@@ -9,6 +9,7 @@ import { Input } from '@/components/atoms/input';
 import { Button } from '@/components/atoms/button';
 import { Label } from '@/components/atoms/label';
 import { Plus, Trash2, ShoppingCart } from 'lucide-react';
+import { getApiErrorMessage } from '@/lib/getApiErrorMessage';
 
 export const OrderForm: React.FC = () => {
     const { data, isLoading } = useGetProducts();
@@ -112,12 +113,7 @@ export const OrderForm: React.FC = () => {
                 setSuccessMsg(null);
             }, 1000);
         } catch (err: unknown) {
-            if (err instanceof Error && 'response' in err) {
-                const axiosError = err as { response?: { data?: { message?: string } } };
-                setErrorMsg(axiosError.response?.data?.message || t('common.error'));
-            } else {
-                setErrorMsg(t('common.error'));
-            }
+            setErrorMsg(getApiErrorMessage(err, t, 'errors.createOrderFailed'));
         }
     };
 

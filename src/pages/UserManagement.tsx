@@ -44,12 +44,12 @@ export const UserManagement: React.FC = () => {
     };
 
     const handleDelete = async (id: string) => {
-        if (!confirm('Are you sure you want to delete this user?')) return;
+        if (!confirm(t('errors.deleteUserConfirm'))) return;
         try {
             await deleteUser.mutateAsync(id);
         } catch (e) {
             console.error('Failed to delete user', e);
-            alert(t('Failed to delete user'));
+            alert(t('errors.deleteUserFailed'));
         }
     };
 

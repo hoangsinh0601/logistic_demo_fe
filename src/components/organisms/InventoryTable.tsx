@@ -46,12 +46,12 @@ export const InventoryTable: React.FC = () => {
     };
 
     const handleDelete = async (id: string) => {
-        if (!confirm('Are you sure you want to delete this product?')) return;
+        if (!confirm(t('errors.deleteProductConfirm'))) return;
         try {
             await deleteProduct.mutateAsync(id);
         } catch (e) {
             console.error('Failed to delete product', e);
-            alert(t('Failed to delete product'));
+            alert(t('errors.deleteProductFailed'));
         }
     };
 

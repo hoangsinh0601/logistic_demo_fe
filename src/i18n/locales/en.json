@@ -323,7 +323,26 @@
     "custom": "Custom",
     "assignPerms": "Manage Permissions",
     "editRole": "Edit",
-    "deleteRole": "Delete"
+    "deleteRole": "Delete",
+    "permissions": {
+      "dashboard.read": "View Dashboard & Finance Stats",
+      "inventory.read": "View Inventory",
+      "inventory.write": "Manage Inventory",
+      "expenses.read": "View Expenses",
+      "expenses.write": "Create Expenses",
+      "tax_rules.read": "View Tax Rules",
+      "tax_rules.write": "Manage Tax Rules",
+      "users.read": "View Users",
+      "users.write": "Manage Users",
+      "users.delete": "Delete Users",
+      "audit.read": "View Audit History",
+      "roles.manage": "Manage Roles & Permissions",
+      "invoices.read": "View Invoices",
+      "invoices.write": "Create Invoices",
+      "approvals.read": "View Approval Requests",
+      "approvals.approve": "Approve / Reject Requests",
+      "finance.read": "View Financial Reports"
+    }
   },
   "audit": {
     "title": "Audit History",
@@ -359,6 +378,8 @@
       "APPROVE_REQUEST": "Approve Request",
       "REJECT_REQUEST": "Reject Request",
       "CREATE_INVOICE_FROM_APPROVAL": "Create Invoice from Approval",
+      "APPROVE_INVOICE": "Approve Invoice",
+      "REJECT_INVOICE": "Reject Invoice",
       "CREATE_EXPENSE": "Create Expense",
       "CREATE_USER": "Create User",
       "UPDATE_USER": "Update User",
@@ -409,5 +430,23 @@
       "updating": "Saving...",
       "usernamePlaceholder": "Enter username"
     }
+  },
+  "errors": {
+    "invalidCredentials": "Invalid email or password. Please try again.",
+    "loginFailed": "Unable to sign in. Please try again later.",
+    "saveProductFailed": "Failed to save product. Please try again.",
+    "saveUserFailed": "Failed to save user. Please try again.",
+    "createOrderFailed": "Failed to create order. Please try again.",
+    "deleteProductFailed": "Failed to delete product. Please try again.",
+    "deleteUserFailed": "Failed to delete user. Please try again.",
+    "deleteProductConfirm": "Are you sure you want to delete this product?",
+    "deleteUserConfirm": "Are you sure you want to delete this user?",
+    "forbidden": "You do not have permission to perform this action.",
+    "conflict": "This operation conflicts with existing data. Please refresh and try again.",
+    "validationFailed": "The submitted data is invalid. Please check your input.",
+    "tooManyRequests": "Too many requests. Please wait a moment and try again.",
+    "serverError": "Server error. Please try again later.",
+    "networkError": "Network error. Please check your connection.",
+    "unknownError": "An unexpected error occurred. Please try again."
   }
 }

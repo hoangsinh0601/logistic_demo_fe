@@ -20,6 +20,7 @@ import {
 } from '@/components/atoms/select';
 import type { User } from '@/types';
 import { useCreateUser, useUpdateUser } from '@/hooks/useUsers';
+import { getApiErrorMessage } from '@/lib/getApiErrorMessage';
 
 interface UserFormModalProps {
     open: boolean;
@@ -95,12 +96,7 @@ export const UserFormModal: React.FC<UserFormModalProps> = ({
             }
             onOpenChange(false);
         } catch (err: unknown) {
-            if (err instanceof Error && 'response' in err) {
-                const axiosError = err as { response?: { data?: { message?: string } } };
-                setErrorMsg(axiosError.response?.data?.message || 'Failed to save user');
-            } else {
-                setErrorMsg('Failed to save user');
-            }
+            setErrorMsg(getApiErrorMessage(err, t, 'errors.saveUserFailed'));
         }
     };
 
