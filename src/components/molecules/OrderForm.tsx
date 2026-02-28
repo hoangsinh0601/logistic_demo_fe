@@ -11,6 +11,7 @@ import { Label } from '@/components/atoms/label';
 import { Plus, Trash2, ShoppingCart } from 'lucide-react';
 import { getApiErrorMessage } from '@/lib/getApiErrorMessage';
 import { ProductSearchSelect } from '@/components/molecules/ProductSearchSelect';
+import { TaxRuleSearchSelect } from '@/components/molecules/TaxRuleSearchSelect';
 export const OrderForm: React.FC = () => {
     const { data: taxData } = useGetTaxRules();
     const taxRules = taxData?.items ?? [];
@@ -171,20 +172,12 @@ export const OrderForm: React.FC = () => {
                     <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-2">
                             <Label>{t('orders.taxLabel')}</Label>
-                            <Select value={taxRuleId} onValueChange={setTaxRuleId}>
-                                <SelectTrigger>
-                                    <SelectValue placeholder={t('orders.taxPlaceholder')} />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="NONE">{t('orders.taxNone')}</SelectItem>
-                                    {activeTaxRules.map(rule => (
-                                        <SelectItem key={rule.id} value={rule.id}>
-                                            {rule.tax_type} — {(parseFloat(rule.rate) * 100).toFixed(1)}%
-                                            {rule.description ? ` (${rule.description})` : ''}
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
+                            <TaxRuleSearchSelect
+                                selectedIds={taxRuleId && taxRuleId !== 'NONE' ? [taxRuleId] : []}
+                                onChange={(ids) => setTaxRuleId(ids[0] || '')}
+                                single
+                                placeholder={t('orders.taxPlaceholder')}
+                            />
                         </div>
                         <div className="space-y-2">
                             <Label>{t('orders.sideFeesLabel')}</Label>

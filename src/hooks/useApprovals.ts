@@ -41,6 +41,17 @@ export function useGetApprovals(status?: string, page = 1, limit = 20) {
   });
 }
 
+export function useGetApprovalDetail(id: string | null) {
+  return useQuery<ApprovalRequest>({
+    queryKey: ["approvals", "detail", id],
+    queryFn: async () => {
+      const response = await api.get(`/api/approvals/${id}`);
+      return response.data.data;
+    },
+    enabled: !!id,
+  });
+}
+
 export function useApproveRequest() {
   const queryClient = useQueryClient();
 

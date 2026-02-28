@@ -1,4 +1,9 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import {
+  useQuery,
+  useInfiniteQuery,
+  useMutation,
+  useQueryClient,
+} from "@tanstack/react-query";
 import { api } from "@/api/api";
 import type {
   TaxRule,
@@ -9,6 +14,7 @@ import type {
 
 export const taxRuleKeys = {
   all: ["tax-rules"] as const,
+  search: (q: string) => ["tax-rules", "search", q] as const,
   active: (type: string) => ["tax-rules", "active", type] as const,
 };
 
@@ -30,6 +36,26 @@ export function useGetTaxRules(page = 1, limit = 20) {
       );
       return response.data.data;
     },
+  });
+}
+
+export function useSearchTaxRules(search: string, limit = 20) {
+  return useInfiniteQuery<PaginatedTaxRules>({
+    queryKey: taxRuleKeys.search(search),
+    queryFn: async ({ pageParam }) => {
+      const params = new URLSearchParams({
+        page: String(pageParam),
+        limit: String(limit),
+      });
+      if (search) params.set("search", search);
+      const response = await api.get(`/api/tax-rules?${params.toString()}`);
+      return response.data.data;
+    },
+    getNextPageParam: (lastPage) => {
+      const loaded = lastPage.page * lastPage.limit;
+      return loaded < lastPage.total ? lastPage.page + 1 : undefined;
+    },
+    initialPageParam: 1,
   });
 }
 

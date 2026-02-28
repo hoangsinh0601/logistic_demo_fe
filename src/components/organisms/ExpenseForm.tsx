@@ -11,31 +11,29 @@ import {
     SelectValue,
 } from "@/components/atoms/select";
 import { useCreateExpense } from "@/hooks/useExpenses";
-import { useGetActiveTaxRate } from "@/hooks/useTaxRules";
+import { useGetTaxRules } from "@/hooks/useTaxRules";
+import { TaxRuleSearchSelect } from "@/components/molecules/TaxRuleSearchSelect";
+import { useTranslation } from "react-i18next";
 import type { CurrencyCode, DocumentType, FCTType, CreateExpensePayload } from "@/types";
 
-const CURRENCIES: { value: CurrencyCode; label: string }[] = [
-    { value: "USD", label: "USD - US Dollar" },
-    { value: "EUR", label: "EUR - Euro" },
-    { value: "JPY", label: "JPY - Japanese Yen" },
-    { value: "CNY", label: "CNY - Chinese Yuan" },
-    { value: "KRW", label: "KRW - Korean Won" },
-    { value: "VND", label: "VND - Việt Nam Đồng" },
-];
+const CURRENCIES: CurrencyCode[] = ["USD", "EUR", "JPY", "CNY", "KRW", "VND"];
 
-const DOCUMENT_TYPES: { value: DocumentType; label: string }[] = [
-    { value: "VAT_INVOICE", label: "Hóa đơn GTGT (VAT Invoice)" },
-    { value: "DIRECT_INVOICE", label: "Hóa đơn trực tiếp" },
-    { value: "RETAIL_RECEIPT", label: "Phiếu thu bán lẻ" },
-    { value: "NONE", label: "Không có chứng từ" },
-];
+const CURRENCY_LABELS: Record<CurrencyCode, string> = {
+    USD: "USD - US Dollar",
+    EUR: "EUR - Euro",
+    JPY: "JPY - Japanese Yen",
+    CNY: "CNY - Chinese Yuan",
+    KRW: "KRW - Korean Won",
+    VND: "VND - Việt Nam Đồng",
+};
+
+const DOCUMENT_TYPES: DocumentType[] = ["VAT_INVOICE", "DIRECT_INVOICE", "RETAIL_RECEIPT", "NONE"];
 
 // Helpers for safe decimal math without floating-point issues
 function safeMultiply(a: string, b: string): string {
     const numA = parseFloat(a);
     const numB = parseFloat(b);
     if (isNaN(numA) || isNaN(numB)) return "0";
-    // Use integer math to avoid floating-point errors
     const decA = (a.split(".")[1] || "").length;
     const decB = (b.split(".")[1] || "").length;
     const intA = Math.round(numA * Math.pow(10, decA));
@@ -57,11 +55,21 @@ function localFormatCurrency(value: string, curr: string): string {
     return new Intl.NumberFormat("en-US", { maximumFractionDigits: 2, minimumFractionDigits: 2 }).format(num) + " " + curr;
 }
 
+interface TaxPreviewItem {
+    name: string;
+    ratePercent: string;
+    amount: string;
+    taxType: string;
+}
+
 export const ExpenseForm: React.FC = () => {
+    const { t } = useTranslation();
+
     // Form state
     const [currency, setCurrency] = useState<CurrencyCode>("USD");
     const [exchangeRate, setExchangeRate] = useState("");
     const [originalAmount, setOriginalAmount] = useState("");
+    const [selectedTaxRuleIds, setSelectedTaxRuleIds] = useState<string[]>([]);
     const [isForeignVendor, setIsForeignVendor] = useState(false);
     const [fctType, setFctType] = useState<FCTType>("NET");
     const [documentType, setDocumentType] = useState<DocumentType>("NONE");
@@ -69,14 +77,9 @@ export const ExpenseForm: React.FC = () => {
     const [documentUrl, setDocumentUrl] = useState("");
     const [description, setDescription] = useState("");
 
-    // Fetch active FCT rate from server (Issue 4)
-    const { data: activeFctRate } = useGetActiveTaxRate("FCT");
-    const { data: activeVatRate } = useGetActiveTaxRate(isForeignVendor ? "VAT_INTL" : "VAT_INLAND");
-
-    // FCT rate — synced from server, editable for preview override
-    const serverFctRate = activeFctRate ? (parseFloat(activeFctRate.rate) * 100).toFixed(2) : "";
-    const [fctRateInput, setFctRateInput] = useState("");
-    const effectiveFctRate = fctRateInput || serverFctRate || "0";
+    // Fetch all tax rules
+    const { data: taxRulesData } = useGetTaxRules(1, 100);
+    const taxRules = taxRulesData?.items ?? [];
 
     const createExpense = useCreateExpense();
 
@@ -89,44 +92,65 @@ export const ExpenseForm: React.FC = () => {
         }
     }, [currency]);
 
-    // Preview calculations using safe math
+    // Toggle a tax rule selection
+    const setSelectedTaxIds = (ids: string[]) => setSelectedTaxRuleIds(ids);
+
+    // Check if any selected tax rule is FCT type
+    const hasFctSelected = useMemo(() => {
+        return taxRules.some(
+            (r) => selectedTaxRuleIds.includes(r.id) && r.tax_type === "FCT"
+        );
+    }, [selectedTaxRuleIds, taxRules]);
+
+    // Preview calculations
     const preview = useMemo(() => {
         const amount = originalAmount || "0";
         const rate = currency === "USD" ? "1" : (exchangeRate || "0");
-        const fctPercent = effectiveFctRate;
-
         const convertedUSD = safeMultiply(amount, rate);
-        const fctRateDecimal = (parseFloat(fctPercent) / 100).toFixed(6);
 
-        let fctAmount = "0";
-        if (isForeignVendor && parseFloat(fctPercent) > 0) {
-            if (fctType === "NET") {
-                fctAmount = safeMultiply(convertedUSD, fctRateDecimal);
-            } else {
-                // GROSS: fct = converted * rate / (1 + rate)
-                const rateDecimal = parseFloat(fctRateDecimal);
-                const divisor = (1 + rateDecimal).toFixed(6);
-                fctAmount = safeDivide(safeMultiply(convertedUSD, fctRateDecimal), divisor);
+        // Calculate tax for each selected rule
+        const taxItems: TaxPreviewItem[] = [];
+        let totalTaxUSD = 0;
+
+        for (const rule of taxRules) {
+            if (!selectedTaxRuleIds.includes(rule.id)) continue;
+            const rateDecimal = parseFloat(rule.rate);
+            const ratePercent = (rateDecimal * 100).toFixed(2);
+            let taxAmount = "0";
+
+            if (rule.tax_type === "FCT" && isForeignVendor) {
+                if (fctType === "NET") {
+                    taxAmount = safeMultiply(convertedUSD, rule.rate);
+                } else {
+                    // GROSS: tax = converted * rate / (1 + rate)
+                    const divisor = (1 + rateDecimal).toFixed(6);
+                    taxAmount = safeDivide(safeMultiply(convertedUSD, rule.rate), divisor);
+                }
+            } else if (rule.tax_type !== "FCT") {
+                taxAmount = safeMultiply(convertedUSD, rule.rate);
+            }
+
+            if (parseFloat(taxAmount) > 0) {
+                taxItems.push({
+                    name: rule.description || rule.tax_type,
+                    ratePercent,
+                    amount: taxAmount,
+                    taxType: rule.tax_type,
+                });
+                totalTaxUSD += parseFloat(taxAmount);
             }
         }
 
-        const fctInOriginal = parseFloat(rate) > 0 ? safeDivide(fctAmount, rate) : "0";
-        const totalPayable = (parseFloat(amount) + parseFloat(fctInOriginal)).toFixed(4);
-
-        // VAT preview
-        let vatAmount = "0";
-        if (documentType === "VAT_INVOICE" && activeVatRate) {
-            const vatRateDecimal = activeVatRate.rate;
-            vatAmount = safeMultiply(convertedUSD, vatRateDecimal);
-        }
+        const totalTaxInOriginal = parseFloat(rate) > 0 ? safeDivide(totalTaxUSD.toFixed(4), rate) : "0";
+        const totalPayable = (parseFloat(amount) + parseFloat(totalTaxInOriginal)).toFixed(4);
 
         return {
             convertedUSD,
-            fctAmount,
+            taxItems,
+            totalTaxUSD: totalTaxUSD.toFixed(4),
             totalPayable,
-            vatAmount,
         };
-    }, [originalAmount, exchangeRate, currency, isForeignVendor, fctType, effectiveFctRate, documentType, activeVatRate]);
+    }, [originalAmount, exchangeRate, currency, selectedTaxRuleIds, taxRules, isForeignVendor, fctType]);
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
@@ -150,10 +174,10 @@ export const ExpenseForm: React.FC = () => {
 
         createExpense.mutate(payload, {
             onSuccess: () => {
-                // Reset form
                 setCurrency("USD");
                 setExchangeRate("");
                 setOriginalAmount("");
+                setSelectedTaxRuleIds([]);
                 setIsForeignVendor(false);
                 setFctType("NET");
                 setDocumentType("NONE");
@@ -174,17 +198,17 @@ export const ExpenseForm: React.FC = () => {
                 <CardHeader>
                     <CardTitle className="text-lg flex items-center gap-2">
                         <span className="inline-block w-2 h-2 rounded-full bg-primary" />
-                        Khai báo Chi phí
+                        {t("expenses.form.cardTitle")}
                     </CardTitle>
                 </CardHeader>
                 <CardContent>
                     <form onSubmit={handleSubmit} className="space-y-6">
                         {/* Description */}
                         <div className="space-y-2">
-                            <Label htmlFor="description">Mô tả chi phí</Label>
+                            <Label htmlFor="description">{t("expenses.form.description")}</Label>
                             <Input
                                 id="description"
-                                placeholder="VD: Thanh toán vận chuyển container..."
+                                placeholder={t("expenses.form.descriptionPlaceholder")}
                                 value={description}
                                 onChange={(e) => setDescription(e.target.value)}
                             />
@@ -193,26 +217,26 @@ export const ExpenseForm: React.FC = () => {
                         {/* Currency Section */}
                         <div className="rounded-lg border border-blue-200 bg-blue-50/50 p-4 space-y-4">
                             <h3 className="text-sm font-semibold text-blue-800 flex items-center gap-2">
-                                💱 Tiền tệ & Tỷ giá
+                                💱 {t("expenses.form.currencySection")}
                             </h3>
 
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 <div className="space-y-2">
-                                    <Label htmlFor="currency">Loại tiền tệ *</Label>
+                                    <Label htmlFor="currency">{t("expenses.form.currencyLabel")}</Label>
                                     <Select value={currency} onValueChange={(v) => setCurrency(v as CurrencyCode)}>
                                         <SelectTrigger id="currency">
-                                            <SelectValue placeholder="Chọn loại tiền" />
+                                            <SelectValue placeholder={t("expenses.form.currencyPlaceholder")} />
                                         </SelectTrigger>
                                         <SelectContent>
                                             {CURRENCIES.map((c) => (
-                                                <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>
+                                                <SelectItem key={c} value={c}>{CURRENCY_LABELS[c]}</SelectItem>
                                             ))}
                                         </SelectContent>
                                     </Select>
                                 </div>
 
                                 <div className="space-y-2">
-                                    <Label htmlFor="original_amount">Số tiền gốc *</Label>
+                                    <Label htmlFor="original_amount">{t("expenses.form.originalAmount")}</Label>
                                     <Input
                                         id="original_amount"
                                         type="number"
@@ -230,98 +254,90 @@ export const ExpenseForm: React.FC = () => {
                             {isNotUSD && (
                                 <div className="space-y-2 animate-in fade-in slide-in-from-top-2 duration-300">
                                     <Label htmlFor="exchange_rate" className="text-orange-700">
-                                        Exchange Rate to USD *
+                                        {t("expenses.form.exchangeRate")}
                                     </Label>
                                     <Input
                                         id="exchange_rate"
                                         type="number"
                                         step="0.000001"
                                         min="0"
-                                        placeholder="e.g. 0.000040 (1 VND = 0.000040 USD)"
+                                        placeholder={t("expenses.form.exchangeRatePlaceholder")}
                                         value={exchangeRate}
                                         onChange={(e) => setExchangeRate(e.target.value)}
                                         required
                                         className="border-orange-300 focus-visible:ring-orange-400"
                                     />
                                     <p className="text-xs text-muted-foreground">
-                                        Enter the exchange rate to convert to USD at the transaction date
+                                        {t("expenses.form.exchangeRateHint")}
                                     </p>
                                 </div>
                             )}
                         </div>
 
-                        {/* FCT Section */}
+                        {/* Tax Rules Section */}
                         <div className="rounded-lg border border-purple-200 bg-purple-50/50 p-4 space-y-4">
                             <h3 className="text-sm font-semibold text-purple-800 flex items-center gap-2">
-                                🏛️ Thuế nhà thầu (FCT)
+                                🏛️ {t("expenses.form.taxSection")}
                             </h3>
+                            <p className="text-xs text-muted-foreground">
+                                {t("expenses.form.taxSectionHint")}
+                            </p>
 
-                            <div className="flex items-center gap-3">
-                                <input
-                                    type="checkbox"
-                                    id="is_foreign_vendor"
-                                    checked={isForeignVendor}
-                                    onChange={(e) => setIsForeignVendor(e.target.checked)}
-                                    className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
-                                />
-                                <Label htmlFor="is_foreign_vendor" className="cursor-pointer">
-                                    Nhà cung cấp nước ngoài (Foreign Vendor)
-                                </Label>
-                            </div>
+                            <TaxRuleSearchSelect
+                                selectedIds={selectedTaxRuleIds}
+                                onChange={setSelectedTaxIds}
+                                placeholder={t("expenses.form.taxSectionHint")}
+                            />
 
-                            {isForeignVendor && (
-                                <div className="space-y-4 animate-in fade-in slide-in-from-top-2 duration-300">
-                                    <div className="space-y-2">
-                                        <Label>Phương thức tính FCT</Label>
-                                        <div className="flex gap-6">
-                                            <label className="flex items-center gap-2 cursor-pointer">
-                                                <input
-                                                    type="radio"
-                                                    name="fct_type"
-                                                    value="NET"
-                                                    checked={fctType === "NET"}
-                                                    onChange={() => setFctType("NET")}
-                                                    className="h-4 w-4 text-primary focus:ring-primary"
-                                                />
-                                                <span className="text-sm">
-                                                    <strong>Net</strong> — Thuế tính trên giá trước thuế
-                                                </span>
-                                            </label>
-                                            <label className="flex items-center gap-2 cursor-pointer">
-                                                <input
-                                                    type="radio"
-                                                    name="fct_type"
-                                                    value="GROSS"
-                                                    checked={fctType === "GROSS"}
-                                                    onChange={() => setFctType("GROSS")}
-                                                    className="h-4 w-4 text-primary focus:ring-primary"
-                                                />
-                                                <span className="text-sm">
-                                                    <strong>Gross</strong> — Thuế tính trên giá đã bao gồm thuế
-                                                </span>
-                                            </label>
-                                        </div>
-                                    </div>
-
-                                    <div className="space-y-2">
-                                        <Label htmlFor="fct_rate">Thuế suất FCT (%)</Label>
-                                        <Input
-                                            id="fct_rate"
-                                            type="number"
-                                            step="0.01"
-                                            min="0"
-                                            max="100"
-                                            placeholder="5"
-                                            value={fctRateInput || serverFctRate}
-                                            onChange={(e) => setFctRateInput(e.target.value)}
-                                            className="max-w-[200px]"
+                            {/* FCT-specific options: show only when a FCT rule is selected */}
+                            {hasFctSelected && (
+                                <div className="space-y-4 pt-3 border-t border-purple-200 animate-in fade-in slide-in-from-top-2 duration-300">
+                                    <div className="flex items-center gap-3">
+                                        <input
+                                            type="checkbox"
+                                            id="is_foreign_vendor"
+                                            checked={isForeignVendor}
+                                            onChange={(e) => setIsForeignVendor(e.target.checked)}
+                                            className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
                                         />
-                                        <p className="text-xs text-muted-foreground">
-                                            {serverFctRate
-                                                ? `Thuế suất từ hệ thống: ${serverFctRate}%. Bạn có thể ghi đè cho Preview.`
-                                                : "Chưa có thuế suất FCT trong hệ thống. Nhập thủ công cho Preview."}
-                                        </p>
+                                        <Label htmlFor="is_foreign_vendor" className="cursor-pointer">
+                                            {t("expenses.form.foreignVendor")}
+                                        </Label>
                                     </div>
+
+                                    {isForeignVendor && (
+                                        <div className="space-y-2 animate-in fade-in slide-in-from-top-2 duration-300">
+                                            <Label>{t("expenses.form.fctMethod")}</Label>
+                                            <div className="flex gap-6">
+                                                <label className="flex items-center gap-2 cursor-pointer">
+                                                    <input
+                                                        type="radio"
+                                                        name="fct_type"
+                                                        value="NET"
+                                                        checked={fctType === "NET"}
+                                                        onChange={() => setFctType("NET")}
+                                                        className="h-4 w-4 text-primary focus:ring-primary"
+                                                    />
+                                                    <span className="text-sm">
+                                                        <strong>{t("expenses.form.fctNet")}</strong> — {t("expenses.form.fctNetDesc")}
+                                                    </span>
+                                                </label>
+                                                <label className="flex items-center gap-2 cursor-pointer">
+                                                    <input
+                                                        type="radio"
+                                                        name="fct_type"
+                                                        value="GROSS"
+                                                        checked={fctType === "GROSS"}
+                                                        onChange={() => setFctType("GROSS")}
+                                                        className="h-4 w-4 text-primary focus:ring-primary"
+                                                    />
+                                                    <span className="text-sm">
+                                                        <strong>{t("expenses.form.fctGross")}</strong> — {t("expenses.form.fctGrossDesc")}
+                                                    </span>
+                                                </label>
+                                            </div>
+                                        </div>
+                                    )}
                                 </div>
                             )}
                         </div>
@@ -329,18 +345,18 @@ export const ExpenseForm: React.FC = () => {
                         {/* Document Section */}
                         <div className="rounded-lg border border-green-200 bg-green-50/50 p-4 space-y-4">
                             <h3 className="text-sm font-semibold text-green-800 flex items-center gap-2">
-                                📄 Chứng từ & Chi phí hợp lệ
+                                📄 {t("expenses.form.documentSection")}
                             </h3>
 
                             <div className="space-y-2">
-                                <Label htmlFor="document_type">Loại chứng từ *</Label>
+                                <Label htmlFor="document_type">{t("expenses.form.documentType")}</Label>
                                 <Select value={documentType} onValueChange={(v) => setDocumentType(v as DocumentType)}>
                                     <SelectTrigger id="document_type">
-                                        <SelectValue placeholder="Chọn loại chứng từ" />
+                                        <SelectValue placeholder={t("expenses.form.documentTypePlaceholder")} />
                                     </SelectTrigger>
                                     <SelectContent>
                                         {DOCUMENT_TYPES.map((d) => (
-                                            <SelectItem key={d.value} value={d.value}>{d.label}</SelectItem>
+                                            <SelectItem key={d} value={d}>{t(`expenses.documentTypes.${d}`)}</SelectItem>
                                         ))}
                                     </SelectContent>
                                 </Select>
@@ -350,11 +366,11 @@ export const ExpenseForm: React.FC = () => {
                                 <div className="space-y-4 animate-in fade-in slide-in-from-top-2 duration-300">
                                     <div className="space-y-2">
                                         <Label htmlFor="vendor_tax_code" className="text-red-600">
-                                            Mã số thuế NCC * (bắt buộc khi chọn Hóa đơn GTGT)
+                                            {t("expenses.form.vendorTaxCode")}
                                         </Label>
                                         <Input
                                             id="vendor_tax_code"
-                                            placeholder="VD: 0102345678"
+                                            placeholder={t("expenses.form.vendorTaxCodePlaceholder")}
                                             value={vendorTaxCode}
                                             onChange={(e) => setVendorTaxCode(e.target.value)}
                                             required
@@ -363,10 +379,10 @@ export const ExpenseForm: React.FC = () => {
                                     </div>
 
                                     <div className="space-y-2">
-                                        <Label htmlFor="document_url">Link chứng từ / Upload</Label>
+                                        <Label htmlFor="document_url">{t("expenses.form.documentUrl")}</Label>
                                         <Input
                                             id="document_url"
-                                            placeholder="https://drive.google.com/..."
+                                            placeholder={t("expenses.form.documentUrlPlaceholder")}
                                             value={documentUrl}
                                             onChange={(e) => setDocumentUrl(e.target.value)}
                                         />
@@ -379,21 +395,21 @@ export const ExpenseForm: React.FC = () => {
                         <div className="flex items-center justify-between pt-2">
                             <p className="text-xs text-muted-foreground">
                                 {isVATInvoice && vendorTaxCode
-                                    ? "✅ Chi phí hợp lệ — được khấu trừ TNDN"
-                                    : "⚠️ Chi phí chưa đủ điều kiện khấu trừ"}
+                                    ? `✅ ${t("expenses.form.deductibleYes")}`
+                                    : `⚠️ ${t("expenses.form.deductibleNo")}`}
                             </p>
                             <Button
                                 type="submit"
                                 disabled={createExpense.isPending || !originalAmount}
                                 className="min-w-[140px]"
                             >
-                                {createExpense.isPending ? "Đang lưu..." : "Lưu chi phí"}
+                                {createExpense.isPending ? t("expenses.form.saving") : t("expenses.form.save")}
                             </Button>
                         </div>
 
                         {createExpense.isError && (
                             <p className="text-sm text-red-600 bg-red-50 p-3 rounded-md">
-                                ❌ {(createExpense.error as Error)?.message || "Có lỗi xảy ra"}
+                                ❌ {(createExpense.error as Error)?.message || t("expenses.form.error")}
                             </p>
                         )}
                     </form>
@@ -408,21 +424,21 @@ export const ExpenseForm: React.FC = () => {
                             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
                             <span className="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span>
                         </span>
-                        Tạm tính (Preview)
+                        {t("expenses.preview.title")}
                     </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
                     {/* Total Payable in Original Currency */}
                     <div className="rounded-lg bg-gradient-to-br from-blue-50 to-indigo-50 p-4 space-y-1">
                         <p className="text-xs font-medium text-blue-600 uppercase tracking-wider">
-                            Total Payable ({currency})
+                            {t("expenses.preview.totalPayable", { currency })}
                         </p>
                         <p className="text-2xl font-bold text-blue-900">
                             {localFormatCurrency(preview.totalPayable, currency)}
                         </p>
-                        {isForeignVendor && (
+                        {preview.taxItems.length > 0 && (
                             <p className="text-xs text-blue-600">
-                                = Original + FCT converted
+                                {t("expenses.preview.totalPayableHint")}
                             </p>
                         )}
                     </div>
@@ -430,47 +446,43 @@ export const ExpenseForm: React.FC = () => {
                     {/* Converted to USD */}
                     <div className="rounded-lg bg-gradient-to-br from-emerald-50 to-teal-50 p-4 space-y-1">
                         <p className="text-xs font-medium text-emerald-600 uppercase tracking-wider">
-                            Converted to USD
+                            {t("expenses.preview.convertedUSD")}
                         </p>
                         <p className="text-2xl font-bold text-emerald-900">
                             ${parseFloat(preview.convertedUSD).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                         </p>
                         {isNotUSD && exchangeRate && (
                             <p className="text-xs text-emerald-600">
-                                Rate: 1 {currency} = {parseFloat(exchangeRate).toLocaleString("en-US", { maximumFractionDigits: 6 })} USD
+                                {t("expenses.preview.rate", {
+                                    currency,
+                                    rate: parseFloat(exchangeRate).toLocaleString("en-US", { maximumFractionDigits: 6 }),
+                                })}
                             </p>
                         )}
                     </div>
 
-                    {/* FCT Amount */}
-                    {isForeignVendor && (
-                        <div className="rounded-lg bg-gradient-to-br from-amber-50 to-orange-50 p-4 space-y-1 animate-in fade-in duration-300">
+                    {/* Tax Items */}
+                    {preview.taxItems.map((item, idx) => (
+                        <div
+                            key={idx}
+                            className="rounded-lg bg-gradient-to-br from-amber-50 to-orange-50 p-4 space-y-1 animate-in fade-in duration-300"
+                        >
                             <p className="text-xs font-medium text-amber-600 uppercase tracking-wider">
-                                FCT Deducted ({fctType})
+                                {t("expenses.preview.taxAmount", { name: item.name, rate: item.ratePercent })}
                             </p>
                             <p className="text-2xl font-bold text-amber-900">
-                                ${parseFloat(preview.fctAmount).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                ${parseFloat(item.amount).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                             </p>
-                            <p className="text-xs text-amber-600">
-                                FCT {effectiveFctRate}% ({fctType === "NET" ? "on pre-tax price" : "on tax-inclusive price"})
-                            </p>
+                            {item.taxType === "FCT" && (
+                                <p className="text-xs text-amber-600">
+                                    {t("expenses.preview.taxMethodHint", {
+                                        rate: item.ratePercent,
+                                        method: fctType === "NET" ? t("expenses.form.fctNetDesc") : t("expenses.form.fctGrossDesc"),
+                                    })}
+                                </p>
+                            )}
                         </div>
-                    )}
-
-                    {/* VAT Amount */}
-                    {documentType === "VAT_INVOICE" && parseFloat(preview.vatAmount) > 0 && (
-                        <div className="rounded-lg bg-gradient-to-br from-green-50 to-lime-50 p-4 space-y-1 animate-in fade-in duration-300">
-                            <p className="text-xs font-medium text-green-600 uppercase tracking-wider">
-                                VAT ({isForeignVendor ? "International" : "Domestic"})
-                            </p>
-                            <p className="text-2xl font-bold text-green-900">
-                                ${parseFloat(preview.vatAmount).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                            </p>
-                            <p className="text-xs text-green-600">
-                                {activeVatRate ? `${(parseFloat(activeVatRate.rate) * 100).toFixed(2)}% (from system)` : "No VAT rate configured"}
-                            </p>
-                        </div>
-                    )}
+                    ))}
 
                     {/* Deductibility Status */}
                     <div className={`rounded-lg p-3 text-center text-sm font-medium ${isVATInvoice && vendorTaxCode
@@ -478,8 +490,8 @@ export const ExpenseForm: React.FC = () => {
                         : "bg-gray-100 text-gray-500 border border-gray-200"
                         }`}>
                         {isVATInvoice && vendorTaxCode
-                            ? "✅ Chi phí hợp lệ (Deductible)"
-                            : "⚠️ Chưa đủ điều kiện khấu trừ"}
+                            ? `✅ ${t("expenses.preview.deductible")}`
+                            : `⚠️ ${t("expenses.preview.notDeductible")}`}
                     </div>
                 </CardContent>
             </Card>

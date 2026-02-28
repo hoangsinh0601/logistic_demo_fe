@@ -1,21 +1,15 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { useGetApprovals, useApproveRequest, useRejectRequest } from "@/hooks/useApprovals";
 import { useTranslation } from "react-i18next";
-import { Can } from "@/components/atoms/Can";
-import { Pagination } from "@/components/molecules/Pagination";
-import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
-} from "@/components/atoms/table";
+import { DataTable, usePagination } from "@/components/molecules/DataTable";
+import type { ColumnDef } from "@/components/molecules/DataTable";
+import { ApprovalDetailDialog } from "@/components/molecules/ApprovalDetailDialog";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/atoms/card";
 import { Badge } from "@/components/atoms/badge";
 import { Button } from "@/components/atoms/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/atoms/select";
-import type { ApprovalStatus, ApprovalRequestType } from "@/types";
+import { Eye } from "lucide-react";
+import type { ApprovalStatus, ApprovalRequestType, ApprovalRequest } from "@/types";
 
 const statusBadgeVariant: Record<ApprovalStatus, "default" | "secondary" | "destructive" | "outline"> = {
     PENDING: "outline",
@@ -32,10 +26,8 @@ const requestTypeBadgeVariant: Record<ApprovalRequestType, "default" | "secondar
 export const ApprovalBoard: React.FC = () => {
     const { t } = useTranslation();
     const [statusFilter, setStatusFilter] = useState<string>("PENDING");
-    const [rejectingId, setRejectingId] = useState<string | null>(null);
-    const [rejectReason, setRejectReason] = useState("");
-    const [page, setPage] = useState(1);
-    const [limit, setLimit] = useState(20);
+    const { page, limit, setPage, setLimit } = usePagination(20);
+    const [selectedApproval, setSelectedApproval] = useState<ApprovalRequest | null>(null);
 
     const effectiveStatus = statusFilter === "ALL" ? undefined : statusFilter;
     const { data, isLoading } = useGetApprovals(effectiveStatus, page, limit);
@@ -44,34 +36,12 @@ export const ApprovalBoard: React.FC = () => {
     const approveMutation = useApproveRequest();
     const rejectMutation = useRejectRequest();
 
-    const handleApprove = (id: string) => {
-        if (confirm(t("approvals.confirmApprove"))) {
-            approveMutation.mutate(id);
-        }
+    const parseRequestData = (rawData: string): Record<string, unknown> => {
+        try { return JSON.parse(rawData); } catch { return {}; }
     };
 
-    const handleReject = (id: string) => {
-        rejectMutation.mutate(
-            { id, reason: rejectReason },
-            {
-                onSuccess: () => {
-                    setRejectingId(null);
-                    setRejectReason("");
-                },
-            }
-        );
-    };
-
-    const parseRequestData = (data: string): Record<string, unknown> => {
-        try {
-            return JSON.parse(data);
-        } catch {
-            return {};
-        }
-    };
-
-    const getRequestSummary = (type: ApprovalRequestType, data: string): string => {
-        const parsed = parseRequestData(data);
+    const getRequestSummary = (type: ApprovalRequestType, rawData: string): string => {
+        const parsed = parseRequestData(rawData);
         switch (type) {
             case "CREATE_ORDER":
                 return `${parsed.type === "IMPORT" ? t("approvals.orderSummary.import") : t("approvals.orderSummary.export")} - ${t("orders.type")}: ${parsed.order_code || "N/A"}`;
@@ -84,11 +54,93 @@ export const ApprovalBoard: React.FC = () => {
         }
     };
 
-    // Reset to first page on filter change
     const handleStatusFilterChange = (value: string) => {
         setStatusFilter(value);
         setPage(1);
     };
+
+    // Approval/reject handlers passed to dialog
+    const handleApprove = (id: string) => {
+        if (confirm(t("approvals.confirmApprove"))) {
+            approveMutation.mutate(id, {
+                onSuccess: () => setSelectedApproval(null),
+            });
+        }
+    };
+
+    const handleReject = (id: string, reason: string) => {
+        rejectMutation.mutate(
+            { id, reason },
+            { onSuccess: () => setSelectedApproval(null) },
+        );
+    };
+
+    const columns = useMemo<ColumnDef<ApprovalRequest>[]>(() => [
+        {
+            key: "requestType",
+            headerKey: "approvals.columns.requestType",
+            render: (req) => (
+                <Badge variant={requestTypeBadgeVariant[req.request_type]}>
+                    {t(`approvals.requestTypes.${req.request_type}`) || req.request_type}
+                </Badge>
+            ),
+        },
+        {
+            key: "summary",
+            headerKey: "approvals.columns.summary",
+            className: "max-w-[300px] truncate text-sm",
+            render: (req) => getRequestSummary(req.request_type, req.request_data),
+        },
+        {
+            key: "requester",
+            headerKey: "approvals.columns.requester",
+            className: "text-sm",
+            render: (req) => req.requester_name || "—",
+        },
+        {
+            key: "status",
+            headerKey: "approvals.columns.status",
+            render: (req) => (
+                <div>
+                    <Badge variant={statusBadgeVariant[req.status]}>
+                        {t(`approvals.status${req.status.charAt(0) + req.status.slice(1).toLowerCase()}`)}
+                    </Badge>
+                    {req.rejection_reason && (
+                        <p className="text-xs text-destructive mt-1 max-w-[200px] truncate" title={req.rejection_reason}>
+                            {t("approvals.rejectionReasonLabel")}: {req.rejection_reason}
+                        </p>
+                    )}
+                </div>
+            ),
+        },
+        {
+            key: "approver",
+            headerKey: "approvals.columns.approver",
+            className: "text-sm",
+            render: (req) => req.approver_name || "—",
+        },
+        {
+            key: "createdAt",
+            headerKey: "approvals.columns.createdAt",
+            className: "text-sm text-muted-foreground",
+            render: (req) => new Date(req.created_at).toLocaleDateString("vi-VN"),
+        },
+        {
+            key: "actions",
+            header: "",
+            render: (req) => (
+                <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => setSelectedApproval(req)}
+                    className="h-7 px-2"
+                >
+                    <Eye className="h-4 w-4 mr-1" />
+                    {t("approvals.viewDetail")}
+                </Button>
+            ),
+        },
+    ], [t]);
 
     return (
         <div className="space-y-6">
@@ -115,7 +167,7 @@ export const ApprovalBoard: React.FC = () => {
                 </div>
             </div>
 
-            {/* Approval Request Table */}
+            {/* Table */}
             <Card>
                 <CardHeader>
                     <CardTitle className="text-lg">{t("approvals.listTitle")}</CardTitle>
@@ -123,116 +175,29 @@ export const ApprovalBoard: React.FC = () => {
                 <CardContent>
                     {isLoading ? (
                         <p className="text-muted-foreground text-center py-8">{t("common.loading")}</p>
-                    ) : !approvals || approvals.length === 0 ? (
-                        <p className="text-muted-foreground text-center py-8">
-                            {t("approvals.noApprovals")}
-                        </p>
                     ) : (
-                        <div className="overflow-x-auto">
-                            <Table>
-                                <TableHeader>
-                                    <TableRow>
-                                        <TableHead>{t("approvals.columns.requestType")}</TableHead>
-                                        <TableHead>{t("approvals.columns.summary")}</TableHead>
-                                        <TableHead>{t("approvals.columns.requester")}</TableHead>
-                                        <TableHead>{t("approvals.columns.status")}</TableHead>
-                                        <TableHead>{t("approvals.columns.approver")}</TableHead>
-                                        <TableHead>{t("approvals.columns.createdAt")}</TableHead>
-                                        <TableHead>{t("approvals.columns.actions")}</TableHead>
-                                    </TableRow>
-                                </TableHeader>
-                                <TableBody>
-                                    {approvals.map((req) => (
-                                        <TableRow key={req.id}>
-                                            <TableCell>
-                                                <Badge variant={requestTypeBadgeVariant[req.request_type]}>
-                                                    {t(`approvals.requestTypes.${req.request_type}`) || req.request_type}
-                                                </Badge>
-                                            </TableCell>
-                                            <TableCell className="text-sm max-w-[300px] truncate">
-                                                {getRequestSummary(req.request_type, req.request_data)}
-                                            </TableCell>
-                                            <TableCell className="text-sm">
-                                                {req.requester_name || "—"}
-                                            </TableCell>
-                                            <TableCell>
-                                                <Badge variant={statusBadgeVariant[req.status]}>
-                                                    {t(`approvals.status${req.status.charAt(0) + req.status.slice(1).toLowerCase()}`)}
-                                                </Badge>
-                                                {req.rejection_reason && (
-                                                    <p className="text-xs text-destructive mt-1 max-w-[200px] truncate"
-                                                        title={req.rejection_reason}>
-                                                        {t("approvals.rejectionReasonLabel")}: {req.rejection_reason}
-                                                    </p>
-                                                )}
-                                            </TableCell>
-                                            <TableCell className="text-sm">
-                                                {req.approver_name || "—"}
-                                            </TableCell>
-                                            <TableCell className="text-sm text-muted-foreground">
-                                                {new Date(req.created_at).toLocaleDateString("vi-VN")}
-                                            </TableCell>
-                                            <TableCell>
-                                                {req.status === "PENDING" && (
-                                                    <Can permission="approvals.approve">
-                                                        <div className="flex flex-col gap-2">
-                                                            <div className="flex gap-2">
-                                                                <Button
-                                                                    size="sm"
-                                                                    variant="default"
-                                                                    onClick={() => handleApprove(req.id)}
-                                                                    disabled={approveMutation.isPending}
-                                                                >
-                                                                    {t("approvals.approve")}
-                                                                </Button>
-                                                                <Button
-                                                                    size="sm"
-                                                                    variant="destructive"
-                                                                    onClick={() => setRejectingId(
-                                                                        rejectingId === req.id ? null : req.id
-                                                                    )}
-                                                                    disabled={rejectMutation.isPending}
-                                                                >
-                                                                    {t("approvals.reject")}
-                                                                </Button>
-                                                            </div>
-                                                            {rejectingId === req.id && (
-                                                                <div className="flex flex-col gap-1">
-                                                                    <textarea
-                                                                        className="text-sm border rounded p-1 w-full min-h-[60px] resize-none"
-                                                                        placeholder={t("approvals.rejectReason")}
-                                                                        value={rejectReason}
-                                                                        onChange={(e) => setRejectReason(e.target.value)}
-                                                                    />
-                                                                    <Button
-                                                                        size="sm"
-                                                                        variant="destructive"
-                                                                        onClick={() => handleReject(req.id)}
-                                                                        disabled={rejectMutation.isPending}
-                                                                    >
-                                                                        {t("approvals.confirmReject")}
-                                                                    </Button>
-                                                                </div>
-                                                            )}
-                                                        </div>
-                                                    </Can>
-                                                )}
-                                            </TableCell>
-                                        </TableRow>
-                                    ))}
-                                </TableBody>
-                            </Table>
-                        </div>
+                        <DataTable
+                            columns={columns}
+                            data={approvals}
+                            rowKey={(req) => req.id}
+                            emptyMessage={t("approvals.noApprovals")}
+                            pagination={{ page, limit, total, onPageChange: setPage, onLimitChange: setLimit }}
+                        />
                     )}
-                    <Pagination
-                        page={page}
-                        limit={limit}
-                        total={total}
-                        onPageChange={setPage}
-                        onLimitChange={setLimit}
-                    />
                 </CardContent>
             </Card>
+
+            <ApprovalDetailDialog
+                approval={selectedApproval}
+                open={!!selectedApproval}
+                onOpenChange={(open) => { if (!open) setSelectedApproval(null); }}
+                onApprove={handleApprove}
+                onReject={handleReject}
+                isApproving={approveMutation.isPending}
+                isRejecting={rejectMutation.isPending}
+            />
         </div>
     );
 };
+
+export default ApprovalBoard;
