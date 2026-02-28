@@ -126,6 +126,7 @@ export const Invoices: React.FC = () => {
                                     <TableRow>
                                         <TableHead>{t("invoices.columns.invoiceNo")}</TableHead>
                                         <TableHead>{t("invoices.columns.referenceType")}</TableHead>
+                                        <TableHead>{t("invoices.columns.companyName")}</TableHead>
                                         <TableHead className="text-right">{t("invoices.columns.subtotal")}</TableHead>
                                         <TableHead className="text-right">{t("invoices.columns.taxAmount")}</TableHead>
                                         <TableHead className="text-right">{t("invoices.columns.sideFees")}</TableHead>
@@ -143,6 +144,9 @@ export const Invoices: React.FC = () => {
                                             </TableCell>
                                             <TableCell>
                                                 <Badge variant="outline">{t(`invoices.refTypes.${inv.reference_type}`) || inv.reference_type}</Badge>
+                                            </TableCell>
+                                            <TableCell className="text-sm">
+                                                {inv.company_name || '—'}
                                             </TableCell>
                                             <TableCell className="text-right font-mono">
                                                 {format(inv.subtotal)}

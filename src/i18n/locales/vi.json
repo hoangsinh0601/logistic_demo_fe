@@ -45,6 +45,7 @@
     "auditHistory": "Lịch Sử Hoạt Động",
     "users": "Quản Lý Người Dùng",
     "roles": "Phân Quyền",
+    "partners": "Đối tác",
     "logout": "Đăng Xuất"
   },
   "auth": {
@@ -173,7 +174,15 @@
     "validation": {
       "emptyProduct": "Vui lòng chọn ít nhất một sản phẩm.",
       "notEnoughStock": "Không đủ số lượng cho sản phẩm {{name}}. Tồn kho hiện tại: {{stock}}."
-    }
+    },
+    "partner": "Đối tác",
+    "selectPartner": "Chọn đối tác...",
+    "noPartner": "— Không chọn —",
+    "originAddress": "Địa chỉ lấy hàng",
+    "shippingAddress": "Địa chỉ giao hàng",
+    "selectOrigin": "Chọn nơi lấy hàng...",
+    "selectShipping": "Chọn nơi giao hàng...",
+    "noAddresses": "Chưa có địa chỉ"
   },
   "approvals": {
     "title": "Bảng Duyệt",
@@ -234,7 +243,13 @@
       "price": "Giá",
       "description": "Mô tả",
       "currency": "Tiền tệ",
-      "amount": "Số tiền"
+      "amount": "Số tiền",
+      "partnerInfo": "Thông tin Đối tác",
+      "partnerName": "Tên Đối tác",
+      "companyName": "Tên Công ty",
+      "taxCode": "Mã số thuế",
+      "originAddress": "Địa chỉ lấy hàng",
+      "shippingAddress": "Địa chỉ giao hàng"
     }
   },
   "invoices": {
@@ -256,6 +271,7 @@
       "taxAmount": "Thuế",
       "sideFees": "Phụ phí",
       "totalAmount": "Tổng cộng",
+      "companyName": "Công ty",
       "status": "Trạng thái",
       "createdAt": "Ngày tạo",
       "issuedDate": "Ngày phát hành"
@@ -288,7 +304,12 @@
       "referenceInfo": "Tham chiếu",
       "referenceId": "Mã tham chiếu",
       "taxRuleId": "Mã quy tắc thuế",
-      "viewDetail": "Xem"
+      "viewDetail": "Xem",
+      "partnerInfo": "Thông tin Đối tác",
+      "companyName": "Tên Công ty",
+      "taxCode": "Mã số thuế",
+      "billingAddress": "Địa chỉ hóa đơn",
+      "updatePartnerInfo": "Lưu thông tin đối tác"
     }
   },
   "expenses": {
@@ -434,7 +455,8 @@
       "roles": "🔐 Phân quyền",
       "invoices": "📄 Hóa đơn",
       "approvals": "✅ Duyệt yêu cầu",
-      "finance": "📈 Tài chính"
+      "finance": "📈 Tài chính",
+      "partners": "🤝 Đối tác"
     },
     "system": "System",
     "custom": "Custom",
@@ -458,7 +480,10 @@
       "invoices.write": "Tạo Hóa đơn",
       "approvals.read": "Xem Yêu cầu duyệt",
       "approvals.approve": "Duyệt / Từ chối yêu cầu",
-      "finance.read": "Xem Báo cáo Tài chính"
+      "finance.read": "Xem Báo cáo Tài chính",
+      "partners.read": "Xem Đối tác",
+      "partners.write": "Quản lý Đối tác",
+      "partners.delete": "Xóa Đối tác"
     }
   },
   "audit": {
@@ -565,5 +590,68 @@
     "serverError": "Lỗi máy chủ. Vui lòng thử lại sau.",
     "networkError": "Lỗi mạng. Vui lòng kiểm tra kết nối của bạn.",
     "unknownError": "Đã xảy ra lỗi không mong muốn. Vui lòng thử lại."
+  },
+  "partners": {
+    "title": "Đối tác & Khách hàng",
+    "subtitle": "Quản lý khách hàng, nhà cung cấp và đối tác kinh doanh.",
+    "listTitle": "Danh sách Đối tác",
+    "addTitle": "Thêm Đối tác",
+    "editTitle": "Sửa Đối tác",
+    "addButton": "Thêm Đối tác",
+    "noPartners": "Chưa có đối tác nào.",
+    "searchPlaceholder": "Tìm theo tên, công ty, SĐT, email...",
+    "confirmDelete": "Bạn có chắc chắn muốn xóa đối tác này?",
+    "active": "Hoạt động",
+    "inactive": "Ngừng HĐ",
+    "filter": {
+      "all": "Tất cả"
+    },
+    "types": {
+      "CUSTOMER": "Khách hàng",
+      "SUPPLIER": "Nhà cung cấp",
+      "BOTH": "Cả hai"
+    },
+    "columns": {
+      "name": "Tên",
+      "type": "Loại",
+      "contact": "Liên hệ",
+      "taxCode": "Mã số thuế",
+      "status": "Trạng thái"
+    },
+    "fields": {
+      "name": "Tên",
+      "namePlaceholder": "Tên đối tác",
+      "type": "Loại",
+      "companyName": "Tên công ty",
+      "companyNamePlaceholder": "Tên pháp nhân",
+      "taxCode": "Mã số thuế",
+      "taxCodePlaceholder": "Mã số thuế doanh nghiệp",
+      "contactPerson": "Người liên hệ",
+      "contactPersonPlaceholder": "Tên người liên hệ",
+      "phone": "Số điện thoại",
+      "phonePlaceholder": "Số điện thoại",
+      "email": "Email",
+      "emailPlaceholder": "email@example.com",
+      "address": "Địa chỉ",
+      "addressPlaceholder": "Địa chỉ kinh doanh",
+      "bankAccount": "Tài khoản ngân hàng",
+      "bankAccountPlaceholder": "Số tài khoản ngân hàng",
+      "isActive": "Đang hoạt động"
+    },
+    "addresses": {
+      "title": "Danh sách địa chỉ",
+      "add": "Thêm địa chỉ",
+      "empty": "Chưa có địa chỉ nào.",
+      "addressLabel": "Địa chỉ #{{index}}",
+      "type": "Loại",
+      "fullAddress": "Địa chỉ",
+      "fullAddressPlaceholder": "Địa chỉ đầy đủ...",
+      "isDefault": "Đặt làm mặc định"
+    },
+    "addressTypes": {
+      "BILLING": "Xuất hóa đơn",
+      "SHIPPING": "Giao hàng",
+      "ORIGIN": "Lấy hàng"
+    }
   }
 }

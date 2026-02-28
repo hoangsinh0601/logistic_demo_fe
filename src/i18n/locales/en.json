@@ -45,6 +45,7 @@
     "auditHistory": "Audit History",
     "users": "Users Management",
     "roles": "Roles & Permissions",
+    "partners": "Partners",
     "logout": "Logout"
   },
   "auth": {
@@ -173,7 +174,15 @@
     "validation": {
       "emptyProduct": "Please select at least one product.",
       "notEnoughStock": "Not enough stock for {{name}}. Current total: {{stock}}."
-    }
+    },
+    "partner": "Partner",
+    "selectPartner": "Select partner...",
+    "noPartner": "— No partner —",
+    "originAddress": "Origin Address",
+    "shippingAddress": "Shipping Address",
+    "selectOrigin": "Select origin...",
+    "selectShipping": "Select shipping...",
+    "noAddresses": "No addresses available"
   },
   "approvals": {
     "title": "Approval Board",
@@ -234,7 +243,13 @@
       "price": "Price",
       "description": "Description",
       "currency": "Currency",
-      "amount": "Amount"
+      "amount": "Amount",
+      "partnerInfo": "Partner Information",
+      "partnerName": "Partner Name",
+      "companyName": "Company Name",
+      "taxCode": "Tax Code",
+      "originAddress": "Origin Address",
+      "shippingAddress": "Shipping Address"
     }
   },
   "invoices": {
@@ -256,6 +271,7 @@
       "taxAmount": "Tax",
       "sideFees": "Side Fees",
       "totalAmount": "Total",
+      "companyName": "Company",
       "status": "Status",
       "createdAt": "Created At",
       "issuedDate": "Issued Date"
@@ -288,7 +304,12 @@
       "referenceInfo": "Reference",
       "referenceId": "Reference ID",
       "taxRuleId": "Tax Rule ID",
-      "viewDetail": "View"
+      "viewDetail": "View",
+      "partnerInfo": "Partner Information",
+      "companyName": "Company Name",
+      "taxCode": "Tax Code",
+      "billingAddress": "Billing Address",
+      "updatePartnerInfo": "Save Partner Info"
     }
   },
   "expenses": {
@@ -434,7 +455,8 @@
       "roles": "🔐 Roles",
       "invoices": "📄 Invoices",
       "approvals": "✅ Approvals",
-      "finance": "📈 Finance"
+      "finance": "📈 Finance",
+      "partners": "🤝 Partners"
     },
     "system": "System",
     "custom": "Custom",
@@ -458,7 +480,10 @@
       "invoices.write": "Create Invoices",
       "approvals.read": "View Approval Requests",
       "approvals.approve": "Approve / Reject Requests",
-      "finance.read": "View Financial Reports"
+      "finance.read": "View Financial Reports",
+      "partners.read": "View Partners",
+      "partners.write": "Manage Partners",
+      "partners.delete": "Delete Partners"
     }
   },
   "audit": {
@@ -565,5 +590,68 @@
     "serverError": "Server error. Please try again later.",
     "networkError": "Network error. Please check your connection.",
     "unknownError": "An unexpected error occurred. Please try again."
+  },
+  "partners": {
+    "title": "Partners & Customers",
+    "subtitle": "Manage your customers, suppliers, and business partners.",
+    "listTitle": "Partner List",
+    "addTitle": "Add Partner",
+    "editTitle": "Edit Partner",
+    "addButton": "Add Partner",
+    "noPartners": "No partners found.",
+    "searchPlaceholder": "Search by name, company, phone, email...",
+    "confirmDelete": "Are you sure you want to delete this partner?",
+    "active": "Active",
+    "inactive": "Inactive",
+    "filter": {
+      "all": "All Types"
+    },
+    "types": {
+      "CUSTOMER": "Customer",
+      "SUPPLIER": "Supplier",
+      "BOTH": "Both"
+    },
+    "columns": {
+      "name": "Name",
+      "type": "Type",
+      "contact": "Contact",
+      "taxCode": "Tax Code",
+      "status": "Status"
+    },
+    "fields": {
+      "name": "Name",
+      "namePlaceholder": "Partner name",
+      "type": "Type",
+      "companyName": "Company Name",
+      "companyNamePlaceholder": "Legal entity name",
+      "taxCode": "Tax Code",
+      "taxCodePlaceholder": "Tax identification number",
+      "contactPerson": "Contact Person",
+      "contactPersonPlaceholder": "Contact person name",
+      "phone": "Phone",
+      "phonePlaceholder": "Phone number",
+      "email": "Email",
+      "emailPlaceholder": "email@example.com",
+      "address": "Address",
+      "addressPlaceholder": "Business address",
+      "bankAccount": "Bank Account",
+      "bankAccountPlaceholder": "Bank account number",
+      "isActive": "Active (Enabled)"
+    },
+    "addresses": {
+      "title": "Addresses",
+      "add": "Add Address",
+      "empty": "No addresses added yet.",
+      "addressLabel": "Address #{{index}}",
+      "type": "Type",
+      "fullAddress": "Address",
+      "fullAddressPlaceholder": "Full address...",
+      "isDefault": "Set as default"
+    },
+    "addressTypes": {
+      "BILLING": "Billing (Invoice)",
+      "SHIPPING": "Shipping (Delivery)",
+      "ORIGIN": "Origin (Pickup)"
+    }
   }
 }

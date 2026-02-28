@@ -1,8 +1,9 @@
 import React, { useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import type { OrderPayload } from '../../types';
+import type { OrderPayload, PartnerAddress } from '../../types';
 import { useCreateOrder } from '@/hooks/useProducts';
 import { useGetTaxRules } from '@/hooks/useTaxRules';
+import { usePartners } from '@/hooks/usePartners';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/atoms/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/atoms/select';
 import { Input } from '@/components/atoms/input';
@@ -12,17 +13,27 @@ import { Plus, Trash2, ShoppingCart } from 'lucide-react';
 import { getApiErrorMessage } from '@/lib/getApiErrorMessage';
 import { ProductSearchSelect } from '@/components/molecules/ProductSearchSelect';
 import { TaxRuleSearchSelect } from '@/components/molecules/TaxRuleSearchSelect';
+
 export const OrderForm: React.FC = () => {
     const { data: taxData } = useGetTaxRules();
     const taxRules = taxData?.items ?? [];
     const createOrder = useCreateOrder();
     const { t } = useTranslation();
 
+    // Load all active partners for dropdown
+    const { data: partnerData } = usePartners(undefined, undefined, 1, 100);
+    const partners = partnerData?.data ?? [];
+
     const [open, setOpen] = useState(false);
     const [type, setType] = useState<'IMPORT' | 'EXPORT'>('IMPORT');
     const [note, setNote] = useState('');
     const [taxRuleId, setTaxRuleId] = useState<string>('');
     const [sideFees, setSideFees] = useState<string>('');
+
+    // Partner & address state
+    const [selectedPartnerId, setSelectedPartnerId] = useState<string>('');
+    const [originAddressId, setOriginAddressId] = useState<string>('');
+    const [shippingAddressId, setShippingAddressId] = useState<string>('');
 
     type OrderItemState = {
         productId: string;
@@ -39,6 +50,19 @@ export const OrderForm: React.FC = () => {
     const [errorMsg, setErrorMsg] = useState<string | null>(null);
     const [successMsg, setSuccessMsg] = useState<string | null>(null);
 
+    // Compute filtered addresses based on selected partner
+    const selectedPartner = partners.find(p => p.id === selectedPartnerId);
+
+    const originAddresses: PartnerAddress[] = useMemo(() => {
+        if (!selectedPartner) return [];
+        return selectedPartner.addresses.filter(a => a.address_type === 'ORIGIN');
+    }, [selectedPartner]);
+
+    const shippingAddresses: PartnerAddress[] = useMemo(() => {
+        if (!selectedPartner) return [];
+        return selectedPartner.addresses.filter(a => a.address_type === 'SHIPPING');
+    }, [selectedPartner]);
+
     // Filter active tax rules (effective_to is null or in the future)
     const activeTaxRules = useMemo(() => {
         const now = new Date().toISOString().split('T')[0];
@@ -48,6 +72,13 @@ export const OrderForm: React.FC = () => {
     // Calculate tax preview
     const selectedTaxRule = activeTaxRules.find(r => r.id === taxRuleId);
     const taxRate = selectedTaxRule ? parseFloat(selectedTaxRule.rate) : 0;
+
+    const handlePartnerChange = (partnerId: string) => {
+        setSelectedPartnerId(partnerId === '_NONE_' ? '' : partnerId);
+        // Reset address selections when partner changes
+        setOriginAddressId('');
+        setShippingAddressId('');
+    };
 
     const handleAddItem = () => {
         setItems([...items, { productId: '', productName: '', currentStock: 0, quantity: 1, price: 0 }]);
@@ -98,6 +129,9 @@ export const OrderForm: React.FC = () => {
             })),
             tax_rule_id: taxRuleId && taxRuleId !== 'NONE' ? taxRuleId : undefined,
             side_fees: sideFees || undefined,
+            partner_id: selectedPartnerId || undefined,
+            origin_address_id: originAddressId || undefined,
+            shipping_address_id: shippingAddressId || undefined,
         };
 
         try {
@@ -108,6 +142,9 @@ export const OrderForm: React.FC = () => {
             setNote('');
             setTaxRuleId('');
             setSideFees('');
+            setSelectedPartnerId('');
+            setOriginAddressId('');
+            setShippingAddressId('');
             setTimeout(() => {
                 setOpen(false);
                 setSuccessMsg(null);
@@ -166,6 +203,74 @@ export const OrderForm: React.FC = () => {
                                 placeholder={t('orders.notePlaceholder')}
                             />
                         </div>
+                    </div>
+
+                    {/* Partner Selection */}
+                    <div className="space-y-4 p-3 border rounded-md bg-muted/20">
+                        <div className="space-y-2">
+                            <Label className="text-sm font-semibold">{t('orders.partner')}</Label>
+                            <Select value={selectedPartnerId || '_NONE_'} onValueChange={handlePartnerChange}>
+                                <SelectTrigger>
+                                    <SelectValue placeholder={t('orders.selectPartner')} />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="_NONE_">{t('orders.noPartner')}</SelectItem>
+                                    {partners.filter(p => p.is_active).map(p => (
+                                        <SelectItem key={p.id} value={p.id}>
+                                            {p.name} {p.company_name ? `(${p.company_name})` : ''}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
+
+                        {selectedPartnerId && (
+                            <div className="grid grid-cols-2 gap-4">
+                                {/* Origin Address */}
+                                <div className="space-y-2">
+                                    <Label className="text-xs text-muted-foreground">{t('orders.originAddress')}</Label>
+                                    {originAddresses.length > 0 ? (
+                                        <Select value={originAddressId || '_NONE_'} onValueChange={(v) => setOriginAddressId(v === '_NONE_' ? '' : v)}>
+                                            <SelectTrigger className="h-9 text-sm">
+                                                <SelectValue placeholder={t('orders.selectOrigin')} />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="_NONE_">—</SelectItem>
+                                                {originAddresses.map(a => (
+                                                    <SelectItem key={a.id} value={a.id}>
+                                                        {a.full_address}
+                                                    </SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
+                                    ) : (
+                                        <p className="text-xs text-muted-foreground italic pt-1">{t('orders.noAddresses')}</p>
+                                    )}
+                                </div>
+
+                                {/* Shipping Address */}
+                                <div className="space-y-2">
+                                    <Label className="text-xs text-muted-foreground">{t('orders.shippingAddress')}</Label>
+                                    {shippingAddresses.length > 0 ? (
+                                        <Select value={shippingAddressId || '_NONE_'} onValueChange={(v) => setShippingAddressId(v === '_NONE_' ? '' : v)}>
+                                            <SelectTrigger className="h-9 text-sm">
+                                                <SelectValue placeholder={t('orders.selectShipping')} />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="_NONE_">—</SelectItem>
+                                                {shippingAddresses.map(a => (
+                                                    <SelectItem key={a.id} value={a.id}>
+                                                        {a.full_address}
+                                                    </SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
+                                    ) : (
+                                        <p className="text-xs text-muted-foreground italic pt-1">{t('orders.noAddresses')}</p>
+                                    )}
+                                </div>
+                            </div>
+                        )}
                     </div>
 
                     {/* Tax Rule & Side Fees */}

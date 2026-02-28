@@ -9,6 +9,7 @@ import { TaxRules } from './pages/TaxRules';
 import { RoleManagement } from './pages/RoleManagement';
 import { ApprovalBoard } from './pages/ApprovalBoard';
 import { Invoices } from './pages/Invoices';
+import { PartnerList } from './pages/Partners';
 import { FinanceDashboard } from './pages/FinanceDashboard';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
@@ -36,6 +37,7 @@ function App() {
                 <Route path="/history" element={<AuditHistory />} />
                 <Route path="/approvals" element={<ApprovalBoard />} />
                 <Route path="/invoices" element={<Invoices />} />
+                <Route path="/partners" element={<PartnerList />} />
 
                 {/* Admin/Manager only routes */}
                 <Route element={<AdminRoute />}>

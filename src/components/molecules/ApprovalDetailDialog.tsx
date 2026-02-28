@@ -206,6 +206,7 @@ const RequestDataView: React.FC<{ type: ApprovalRequestType; data: Record<string
 
 const OrderDataView: React.FC<{ data: Record<string, unknown>; f: (k: string) => string }> = ({ data, f }) => {
     const items = Array.isArray(data.items) ? data.items as Record<string, unknown>[] : [];
+    const hasPartner = Boolean(data.partner_name || data.company_name);
 
     return (
         <div className="space-y-3">
@@ -216,6 +217,32 @@ const OrderDataView: React.FC<{ data: Record<string, unknown>; f: (k: string) =>
                 </InfoRow>
                 {Boolean(data.note) && <div className="col-span-2"><InfoRow label={f('note')}>{String(data.note)}</InfoRow></div>}
             </div>
+
+            {/* Partner Info */}
+            {hasPartner && (
+                <div className="space-y-2 pt-2 border-t">
+                    <p className="text-xs text-muted-foreground font-medium">{f('partnerInfo')}</p>
+                    <div className="grid grid-cols-2 gap-3 text-sm">
+                        {Boolean(data.partner_name) && (
+                            <InfoRow label={f('partnerName')}>{String(data.partner_name)}</InfoRow>
+                        )}
+                        {Boolean(data.company_name) && (
+                            <InfoRow label={f('companyName')}>{String(data.company_name)}</InfoRow>
+                        )}
+                        {Boolean(data.tax_code) && (
+                            <InfoRow label={f('taxCode')}>{String(data.tax_code)}</InfoRow>
+                        )}
+                    </div>
+                    <div className="grid grid-cols-2 gap-3 text-sm">
+                        {Boolean(data.origin_address) && (
+                            <InfoRow label={f('originAddress')}>{String(data.origin_address)}</InfoRow>
+                        )}
+                        {Boolean(data.shipping_address) && (
+                            <InfoRow label={f('shippingAddress')}>{String(data.shipping_address)}</InfoRow>
+                        )}
+                    </div>
+                </div>
+            )}
 
             {items.length > 0 && (
                 <div className="space-y-2">
@@ -233,7 +260,7 @@ const OrderDataView: React.FC<{ data: Record<string, unknown>; f: (k: string) =>
                                 {items.map((item, idx) => (
                                     <TableRow key={idx}>
                                         <TableCell className="font-mono text-xs">
-                                            {String(item.product_id || '—')}
+                                            {String(item.product_name || item.product_id || '—')}
                                         </TableCell>
                                         <TableCell className="text-right">{String(item.quantity)}</TableCell>
                                         <TableCell className="text-right font-mono">

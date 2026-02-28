@@ -1,6 +1,10 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/api/api";
-import type { Invoice, CreateInvoicePayload } from "@/types";
+import type {
+  Invoice,
+  CreateInvoicePayload,
+  UpdateInvoicePayload,
+} from "@/types";
 
 export const invoiceKeys = {
   all: ["invoices"] as const,
@@ -49,6 +53,23 @@ export function useCreateInvoice() {
   return useMutation({
     mutationFn: async (payload: CreateInvoicePayload) => {
       const response = await api.post("/api/invoices", payload);
+      return response.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: invoiceKeys.all });
+    },
+  });
+}
+
+export function useUpdateInvoice() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({
+      id,
+      ...payload
+    }: UpdateInvoicePayload & { id: string }) => {
+      const response = await api.put(`/api/invoices/${id}`, payload);
       return response.data;
     },
     onSuccess: () => {

@@ -31,6 +31,9 @@ export interface OrderPayload {
   items: OrderItemPayload[];
   tax_rule_id?: string;
   side_fees?: string;
+  partner_id?: string;
+  origin_address_id?: string;
+  shipping_address_id?: string;
 }
 
 export interface WsMessage {
@@ -212,6 +215,10 @@ export interface Invoice {
   approved_by: string | null;
   approved_at: string | null;
   note: string;
+  partner_id: string | null;
+  company_name: string;
+  tax_code: string;
+  billing_address: string;
   created_at: string;
 }
 
@@ -221,6 +228,13 @@ export interface CreateInvoicePayload {
   tax_rule_id?: string;
   subtotal: string;
   side_fees?: string;
+  note?: string;
+}
+
+export interface UpdateInvoicePayload {
+  company_name?: string;
+  tax_code?: string;
+  billing_address?: string;
   note?: string;
 }
 
@@ -253,4 +267,66 @@ export interface ApprovalRequest {
   approved_at: string | null;
   rejection_reason: string;
   created_at: string;
+}
+
+// --- PARTNER / CRM ---
+
+export type PartnerType = "CUSTOMER" | "SUPPLIER" | "BOTH";
+export type AddressType = "BILLING" | "SHIPPING" | "ORIGIN";
+
+export interface PartnerAddress {
+  id: string;
+  partner_id: string;
+  address_type: AddressType;
+  full_address: string;
+  is_default: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface Partner {
+  id: string;
+  name: string;
+  type: PartnerType;
+  tax_code: string;
+  company_name: string;
+  bank_account: string;
+  contact_person: string;
+  phone: string;
+  email: string;
+  is_active: boolean;
+  addresses: PartnerAddress[];
+  created_at: string;
+  updated_at: string;
+}
+
+export interface AddressPayload {
+  address_type: AddressType;
+  full_address: string;
+  is_default: boolean;
+}
+
+export interface CreatePartnerPayload {
+  name: string;
+  type: PartnerType;
+  tax_code?: string;
+  company_name?: string;
+  bank_account?: string;
+  contact_person?: string;
+  phone?: string;
+  email?: string;
+  addresses?: AddressPayload[];
+}
+
+export interface UpdatePartnerPayload {
+  name?: string;
+  type?: PartnerType;
+  tax_code?: string;
+  company_name?: string;
+  bank_account?: string;
+  contact_person?: string;
+  phone?: string;
+  email?: string;
+  is_active?: boolean;
+  addresses?: AddressPayload[];
 }

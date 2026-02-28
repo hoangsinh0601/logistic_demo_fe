@@ -1,7 +1,12 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/atoms/dialog';
 import { Badge } from '@/components/atoms/badge';
+import { Input } from '@/components/atoms/input';
+import { Label } from '@/components/atoms/label';
+import { Button } from '@/components/atoms/button';
+import { useUpdateInvoice } from '@/hooks/useInvoices';
+import { getApiErrorMessage } from '@/lib/getApiErrorMessage';
 import type { Invoice, ApprovalStatus } from '@/types';
 
 interface InvoiceDetailDialogProps {
@@ -24,10 +29,45 @@ export const InvoiceDetailDialog: React.FC<InvoiceDetailDialogProps> = ({
     formatCurrency,
 }) => {
     const { t } = useTranslation();
+    const updateMutation = useUpdateInvoice();
+
+    // Editable partner fields (only for PENDING invoices)
+    const [companyName, setCompanyName] = useState('');
+    const [taxCode, setTaxCode] = useState('');
+    const [billingAddress, setBillingAddress] = useState('');
+    const [editMsg, setEditMsg] = useState<string | null>(null);
+    const [editError, setEditError] = useState<string | null>(null);
+
+    useEffect(() => {
+        if (invoice) {
+            setCompanyName(invoice.company_name || '');
+            setTaxCode(invoice.tax_code || '');
+            setBillingAddress(invoice.billing_address || '');
+            setEditMsg(null);
+            setEditError(null);
+        }
+    }, [invoice]);
 
     if (!invoice) return null;
 
     const f = (key: string) => t(`invoices.detail.${key}`);
+    const isPending = invoice.approval_status === 'PENDING';
+
+    const handleSavePartnerInfo = async () => {
+        setEditMsg(null);
+        setEditError(null);
+        try {
+            await updateMutation.mutateAsync({
+                id: invoice.id,
+                company_name: companyName,
+                tax_code: taxCode,
+                billing_address: billingAddress,
+            });
+            setEditMsg(t('common.success'));
+        } catch (err: unknown) {
+            setEditError(getApiErrorMessage(err, t, 'common.errorOccurred'));
+        }
+    };
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
@@ -68,6 +108,66 @@ export const InvoiceDetailDialog: React.FC<InvoiceDetailDialogProps> = ({
                                 <InfoRow label={f('approvedAt')}>
                                     {new Date(invoice.approved_at).toLocaleString('vi-VN')}
                                 </InfoRow>
+                            )}
+                        </div>
+                    </section>
+
+                    {/* Partner Info — editable for PENDING, read-only otherwise */}
+                    <section className="space-y-3 pt-2 border-t">
+                        <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
+                            {f('partnerInfo')}
+                        </h3>
+
+                        {editMsg && <div className="p-2 text-xs text-green-700 bg-green-100 rounded">{editMsg}</div>}
+                        {editError && <div className="p-2 text-xs text-destructive bg-destructive/10 rounded">{editError}</div>}
+
+                        <div className="space-y-3">
+                            <div className="space-y-1">
+                                <Label className="text-xs">{f('companyName')}</Label>
+                                {isPending ? (
+                                    <Input
+                                        value={companyName}
+                                        onChange={e => setCompanyName(e.target.value)}
+                                        className="h-8 text-sm"
+                                    />
+                                ) : (
+                                    <p className="text-sm font-medium">{invoice.company_name || '—'}</p>
+                                )}
+                            </div>
+                            <div className="space-y-1">
+                                <Label className="text-xs">{f('taxCode')}</Label>
+                                {isPending ? (
+                                    <Input
+                                        value={taxCode}
+                                        onChange={e => setTaxCode(e.target.value)}
+                                        className="h-8 text-sm"
+                                    />
+                                ) : (
+                                    <p className="text-sm font-medium">{invoice.tax_code || '—'}</p>
+                                )}
+                            </div>
+                            <div className="space-y-1">
+                                <Label className="text-xs">{f('billingAddress')}</Label>
+                                {isPending ? (
+                                    <Input
+                                        value={billingAddress}
+                                        onChange={e => setBillingAddress(e.target.value)}
+                                        className="h-8 text-sm"
+                                    />
+                                ) : (
+                                    <p className="text-sm font-medium">{invoice.billing_address || '—'}</p>
+                                )}
+                            </div>
+                            {isPending && (
+                                <Button
+                                    size="sm"
+                                    variant="outline"
+                                    disabled={updateMutation.isPending}
+                                    onClick={handleSavePartnerInfo}
+                                    className="h-7 text-xs"
+                                >
+                                    {updateMutation.isPending ? t('common.saving') : f('updatePartnerInfo')}
+                                </Button>
                             )}
                         </div>
                     </section>
