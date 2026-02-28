@@ -269,6 +269,26 @@
       "ORDER_IMPORT": "Order Import",
       "ORDER_EXPORT": "Order Export",
       "EXPENSE": "Expense"
+    },
+    "detail": {
+      "title": "Invoice Detail",
+      "generalInfo": "General Information",
+      "financialInfo": "Financial Summary",
+      "invoiceNo": "Invoice Number",
+      "referenceType": "Reference Type",
+      "status": "Approval Status",
+      "createdAt": "Created At",
+      "approvedAt": "Approved At",
+      "subtotal": "Subtotal",
+      "taxInfo": "Tax",
+      "taxAmount": "Tax Amount",
+      "sideFees": "Side Fees",
+      "totalAmount": "Total Amount",
+      "note": "Note",
+      "referenceInfo": "Reference",
+      "referenceId": "Reference ID",
+      "taxRuleId": "Tax Rule ID",
+      "viewDetail": "View"
     }
   },
   "expenses": {

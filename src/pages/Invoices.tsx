@@ -3,6 +3,7 @@ import { useGetInvoices } from "@/hooks/useInvoices";
 import { useCurrencyDisplay } from "@/hooks/useCurrencyDisplay";
 import { CurrencyToggle } from "@/components/atoms/CurrencyToggle";
 import { Pagination } from "@/components/molecules/Pagination";
+import { InvoiceDetailDialog } from "@/components/molecules/InvoiceDetailDialog";
 import { useTranslation } from "react-i18next";
 import {
     Table,
@@ -15,8 +16,10 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/atoms/card";
 import { Badge } from "@/components/atoms/badge";
 import { Input } from "@/components/atoms/input";
+import { Button } from "@/components/atoms/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/atoms/select";
-import { Search } from "lucide-react";
+import { Search, Eye } from "lucide-react";
+import type { Invoice } from "@/types";
 
 export const Invoices: React.FC = () => {
     const { t } = useTranslation();
@@ -28,6 +31,7 @@ export const Invoices: React.FC = () => {
     const [debouncedSearch, setDebouncedSearch] = useState("");
     const [refType, setRefType] = useState("");
     const [status, setStatus] = useState("APPROVED");
+    const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null);
 
     // Debounce invoice_no search
     useEffect(() => {
@@ -128,6 +132,7 @@ export const Invoices: React.FC = () => {
                                         <TableHead className="text-right">{t("invoices.columns.totalAmount")}</TableHead>
                                         <TableHead>{t("invoices.columns.status")}</TableHead>
                                         <TableHead>{t("invoices.columns.createdAt")}</TableHead>
+                                        <TableHead></TableHead>
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
@@ -159,6 +164,17 @@ export const Invoices: React.FC = () => {
                                             <TableCell className="text-sm text-muted-foreground">
                                                 {new Date(inv.created_at).toLocaleDateString("vi-VN")}
                                             </TableCell>
+                                            <TableCell>
+                                                <Button
+                                                    size="sm"
+                                                    variant="ghost"
+                                                    onClick={() => setSelectedInvoice(inv)}
+                                                    className="h-7 px-2"
+                                                >
+                                                    <Eye className="h-4 w-4 mr-1" />
+                                                    {t("invoices.detail.viewDetail")}
+                                                </Button>
+                                            </TableCell>
                                         </TableRow>
                                     ))}
                                 </TableBody>
@@ -174,6 +190,12 @@ export const Invoices: React.FC = () => {
                     />
                 </CardContent>
             </Card>
+            <InvoiceDetailDialog
+                invoice={selectedInvoice}
+                open={!!selectedInvoice}
+                onOpenChange={(open) => { if (!open) setSelectedInvoice(null); }}
+                formatCurrency={format}
+            />
         </div>
     );
 };

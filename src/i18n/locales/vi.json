@@ -269,6 +269,26 @@
       "ORDER_IMPORT": "Nhập hàng",
       "ORDER_EXPORT": "Xuất hàng",
       "EXPENSE": "Chi phí"
+    },
+    "detail": {
+      "title": "Chi tiết Hoá đơn",
+      "generalInfo": "Thông tin chung",
+      "financialInfo": "Tóm tắt Tài chính",
+      "invoiceNo": "Số Hoá đơn",
+      "referenceType": "Loại tham chiếu",
+      "status": "Trạng thái duyệt",
+      "createdAt": "Ngày tạo",
+      "approvedAt": "Ngày duyệt",
+      "subtotal": "Trước thuế",
+      "taxInfo": "Thuế",
+      "taxAmount": "Số tiền thuế",
+      "sideFees": "Phụ phí",
+      "totalAmount": "Tổng cộng",
+      "note": "Ghi chú",
+      "referenceInfo": "Tham chiếu",
+      "referenceId": "Mã tham chiếu",
+      "taxRuleId": "Mã quy tắc thuế",
+      "viewDetail": "Xem"
     }
   },
   "expenses": {
