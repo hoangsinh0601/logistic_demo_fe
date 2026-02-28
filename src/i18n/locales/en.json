@@ -216,15 +216,28 @@
     "subtitle": "List of approved and issued invoices.",
     "listTitle": "Invoice List",
     "noInvoices": "No invoices yet.",
+    "searchInvoiceNo": "Search by invoice number...",
+    "filterRefType": "Reference type",
+    "filterStatus": "Approval status",
+    "allRefTypes": "All types",
+    "allStatuses": "All statuses",
     "columns": {
       "invoiceNo": "Invoice No.",
+      "referenceType": "Reference Type",
       "type": "Type",
       "tax": "Tax",
       "subtotal": "Subtotal",
       "taxAmount": "Tax",
       "sideFees": "Side Fees",
       "totalAmount": "Total",
+      "status": "Status",
+      "createdAt": "Created At",
       "issuedDate": "Issued Date"
+    },
+    "statuses": {
+      "PENDING": "Pending",
+      "APPROVED": "Approved",
+      "REJECTED": "Rejected"
     },
     "refTypes": {
       "ORDER_IMPORT": "Order Import",

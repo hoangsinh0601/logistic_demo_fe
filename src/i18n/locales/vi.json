@@ -216,15 +216,28 @@
     "subtitle": "Danh sách hoá đơn đã được duyệt và phát hành.",
     "listTitle": "Danh sách Hoá đơn",
     "noInvoices": "Chưa có hoá đơn nào.",
+    "searchInvoiceNo": "Tìm theo mã hoá đơn...",
+    "filterRefType": "Loại tham chiếu",
+    "filterStatus": "Trạng thái duyệt",
+    "allRefTypes": "Tất cả loại",
+    "allStatuses": "Tất cả trạng thái",
     "columns": {
       "invoiceNo": "Số HĐ",
+      "referenceType": "Loại",
       "type": "Loại",
       "tax": "Thuế",
       "subtotal": "Trước thuế",
       "taxAmount": "Thuế",
       "sideFees": "Phụ phí",
       "totalAmount": "Tổng cộng",
+      "status": "Trạng thái",
+      "createdAt": "Ngày tạo",
       "issuedDate": "Ngày phát hành"
+    },
+    "statuses": {
+      "PENDING": "Đang chờ",
+      "APPROVED": "Đã duyệt",
+      "REJECTED": "Từ chối"
     },
     "refTypes": {
       "ORDER_IMPORT": "Nhập hàng",

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useGetInvoices } from "@/hooks/useInvoices";
 import { useCurrencyDisplay } from "@/hooks/useCurrencyDisplay";
 import { CurrencyToggle } from "@/components/atoms/CurrencyToggle";
@@ -14,12 +14,44 @@ import {
 } from "@/components/atoms/table";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/atoms/card";
 import { Badge } from "@/components/atoms/badge";
+import { Input } from "@/components/atoms/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/atoms/select";
+import { Search } from "lucide-react";
 
 export const Invoices: React.FC = () => {
     const { t } = useTranslation();
     const [page, setPage] = useState(1);
     const [limit, setLimit] = useState(20);
-    const { data, isLoading } = useGetInvoices("APPROVED", page, limit);
+
+    // Filters
+    const [searchInput, setSearchInput] = useState("");
+    const [debouncedSearch, setDebouncedSearch] = useState("");
+    const [refType, setRefType] = useState("");
+    const [status, setStatus] = useState("APPROVED");
+
+    // Debounce invoice_no search
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            setDebouncedSearch(searchInput);
+            setPage(1);
+        }, 300);
+        return () => clearTimeout(timer);
+    }, [searchInput]);
+
+    // Reset page on filter change
+    useEffect(() => {
+        setPage(1);
+    }, [refType, status]);
+
+    const { data, isLoading } = useGetInvoices(
+        {
+            status: status && status !== "ALL" ? status : undefined,
+            invoiceNo: debouncedSearch || undefined,
+            refType: refType && refType !== "ALL" ? refType : undefined,
+        },
+        page,
+        limit,
+    );
     const invoices = data?.invoices ?? [];
     const total = data?.total ?? 0;
     const { currency, toggle, format, isLoading: rateLoading, rate } = useCurrencyDisplay();
@@ -38,7 +70,45 @@ export const Invoices: React.FC = () => {
                 <CardHeader>
                     <CardTitle className="text-lg">{t("invoices.listTitle")}</CardTitle>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="space-y-4">
+                    {/* Filter Bar */}
+                    <div className="flex flex-wrap items-center gap-3">
+                        <div className="relative flex-1 min-w-[200px] max-w-xs">
+                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                            <Input
+                                value={searchInput}
+                                onChange={(e) => setSearchInput(e.target.value)}
+                                placeholder={t("invoices.searchInvoiceNo")}
+                                className="pl-9 h-9"
+                            />
+                        </div>
+
+                        <Select value={refType} onValueChange={setRefType}>
+                            <SelectTrigger className="w-[180px] h-9">
+                                <SelectValue placeholder={t("invoices.filterRefType")} />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="ALL">{t("invoices.allRefTypes")}</SelectItem>
+                                <SelectItem value="ORDER_IMPORT">{t("invoices.refTypes.ORDER_IMPORT")}</SelectItem>
+                                <SelectItem value="ORDER_EXPORT">{t("invoices.refTypes.ORDER_EXPORT")}</SelectItem>
+                                <SelectItem value="EXPENSE">{t("invoices.refTypes.EXPENSE")}</SelectItem>
+                            </SelectContent>
+                        </Select>
+
+                        <Select value={status} onValueChange={setStatus}>
+                            <SelectTrigger className="w-[180px] h-9">
+                                <SelectValue placeholder={t("invoices.filterStatus")} />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="ALL">{t("invoices.allStatuses")}</SelectItem>
+                                <SelectItem value="PENDING">{t("invoices.statuses.PENDING")}</SelectItem>
+                                <SelectItem value="APPROVED">{t("invoices.statuses.APPROVED")}</SelectItem>
+                                <SelectItem value="REJECTED">{t("invoices.statuses.REJECTED")}</SelectItem>
+                            </SelectContent>
+                        </Select>
+                    </div>
+
+                    {/* Table */}
                     {isLoading ? (
                         <p className="text-muted-foreground text-center py-8">{t("common.loading")}</p>
                     ) : !invoices || invoices.length === 0 ? (

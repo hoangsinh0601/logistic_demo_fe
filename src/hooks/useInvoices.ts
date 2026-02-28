@@ -5,6 +5,8 @@ import type { Invoice, CreateInvoicePayload } from "@/types";
 export const invoiceKeys = {
   all: ["invoices"] as const,
   byStatus: (status: string) => ["invoices", status] as const,
+  list: (filters: Record<string, string | number>) =>
+    ["invoices", filters] as const,
 };
 
 // ------------- TYPES -------------
@@ -15,14 +17,24 @@ interface PaginatedInvoices {
   limit: number;
 }
 
-export function useGetInvoices(status?: string, page = 1, limit = 20) {
+interface InvoiceFilters {
+  status?: string;
+  invoiceNo?: string;
+  refType?: string;
+}
+
+export function useGetInvoices(
+  filters: InvoiceFilters = {},
+  page = 1,
+  limit = 20,
+) {
   return useQuery<PaginatedInvoices>({
-    queryKey: status
-      ? [...invoiceKeys.byStatus(status), page, limit]
-      : [...invoiceKeys.all, page, limit],
+    queryKey: invoiceKeys.list({ ...filters, page, limit }),
     queryFn: async () => {
       const params = new URLSearchParams();
-      if (status) params.set("status", status);
+      if (filters.status) params.set("status", filters.status);
+      if (filters.invoiceNo) params.set("invoice_no", filters.invoiceNo);
+      if (filters.refType) params.set("ref_type", filters.refType);
       params.set("page", String(page));
       params.set("limit", String(limit));
       const response = await api.get(`/api/invoices?${params.toString()}`);
