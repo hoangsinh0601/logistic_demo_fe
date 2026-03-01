@@ -52,21 +52,6 @@ export function useGetApprovalDetail(id: string | null) {
   });
 }
 
-export function useApproveRequest() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: async (id: string) => {
-      const response = await api.put(`/api/approvals/${id}/approve`);
-      return response.data;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: approvalKeys.all });
-      queryClient.invalidateQueries({ queryKey: ["invoices"] });
-    },
-  });
-}
-
 export function useRejectRequest() {
   const queryClient = useQueryClient();
 

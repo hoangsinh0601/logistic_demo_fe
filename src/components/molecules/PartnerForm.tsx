@@ -14,7 +14,7 @@ import { Plus, Trash2 } from "lucide-react";
 import type { Partner, PartnerType, AddressType } from "@/types";
 import { Checkbox } from "@/components/atoms/checkbox";
 
-const PARTNER_TYPES: PartnerType[] = ["CUSTOMER", "SUPPLIER", "BOTH"];
+const PARTNER_TYPES: PartnerType[] = ["CUSTOMER", "SUPPLIER", "BOTH", "CARRIER"];
 const ADDRESS_TYPES: AddressType[] = ["BILLING", "SHIPPING", "ORIGIN"];
 
 const addressSchema = z.object({
@@ -25,7 +25,7 @@ const addressSchema = z.object({
 
 const partnerSchema = z.object({
     name: z.string().min(1, "Name is required"),
-    type: z.enum(["CUSTOMER", "SUPPLIER", "BOTH"]),
+    type: z.enum(["CUSTOMER", "SUPPLIER", "BOTH", "CARRIER"]),
     tax_code: z.string().default(""),
     company_name: z.string().default(""),
     bank_account: z.string().default(""),

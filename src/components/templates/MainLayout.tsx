@@ -3,7 +3,7 @@ import { Outlet, Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/atoms/button';
-import { Users, LogOut, Package, History, Receipt, Scale, Shield, FileCheck, BarChart3, ClipboardCheck, Handshake } from 'lucide-react';
+import { Users, LogOut, Package, History, Receipt, Scale, Shield, FileCheck, BarChart3, ClipboardCheck, Handshake, Truck } from 'lucide-react';
 import { LanguageSwitcher } from '../molecules/LanguageSwitcher';
 
 interface NavItem {
@@ -22,6 +22,7 @@ const NAV_ITEMS: NavItem[] = [
     { to: '/approvals', labelKey: 'sidebar.approvals', icon: ClipboardCheck, permissions: ['approvals.read'] },
     { to: '/invoices', labelKey: 'sidebar.invoices', icon: FileCheck, permissions: ['invoices.read'] },
     { to: '/partners', labelKey: 'sidebar.partners', icon: Handshake, permissions: ['partners.read'] },
+    { to: '/shipments', labelKey: 'sidebar.shipments', icon: Truck, permissions: ['shipments.read'] },
     { to: '/users', labelKey: 'sidebar.users', icon: Users, permissions: ['users.read'] },
     { to: '/roles', labelKey: 'sidebar.roles', icon: Shield, permissions: ['roles.manage'] },
     { to: '/history', labelKey: 'sidebar.auditHistory', icon: History, permissions: ['audit.read'] },

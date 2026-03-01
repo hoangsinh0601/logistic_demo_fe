@@ -46,6 +46,7 @@
     "users": "Quản Lý Người Dùng",
     "roles": "Phân Quyền",
     "partners": "Đối tác",
+    "shipments": "Vận đơn",
     "logout": "Đăng Xuất"
   },
   "auth": {
@@ -182,7 +183,10 @@
     "shippingAddress": "Địa chỉ giao hàng",
     "selectOrigin": "Chọn nơi lấy hàng...",
     "selectShipping": "Chọn nơi giao hàng...",
-    "noAddresses": "Chưa có địa chỉ"
+    "noAddresses": "Không có địa chỉ",
+    "carrier": "Đơn vị vận chuyển",
+    "selectCarrier": "Chọn đơn vị vận chuyển...",
+    "noCarrier": "— Không có đơn vị vận chuyển —"
   },
   "approvals": {
     "title": "Bảng Duyệt",
@@ -249,7 +253,25 @@
       "companyName": "Tên Công ty",
       "taxCode": "Mã số thuế",
       "originAddress": "Địa chỉ lấy hàng",
-      "shippingAddress": "Địa chỉ giao hàng"
+      "shippingAddress": "Địa chỉ giao hàng",
+      "carrierInfo": "Thông tin Đơn vị vận chuyển",
+      "carrierName": "Tên đơn vị vận chuyển",
+      "carrierCompany": "Công ty vận chuyển"
+    },
+    "dualApproval": {
+      "title": "Duyệt Kho & Kế Toán",
+      "warehouse": "Vận hành Kho",
+      "accounting": "Kế toán / Hóa đơn",
+      "pending": "Chờ duyệt",
+      "delivered": "Đã xuất kho",
+      "invoiced": "Đã lập hóa đơn",
+      "approveWarehouse": "Duyệt Xuất Kho",
+      "approveAccounting": "Duyệt Tài Chính",
+      "confirmWarehouse": "Xác nhận duyệt kho? Tồn kho sẽ được cập nhật.",
+      "confirmAccounting": "Xác nhận duyệt kế toán? Hoá đơn sẽ được tạo ngay lập tức.",
+      "confirmReject": "Bạn có chắc muốn từ chối đơn hàng này?",
+      "rejectWarehouseTitle": "Từ chối duyệt kho",
+      "rejectAccountingTitle": "Từ chối duyệt kế toán"
     }
   },
   "invoices": {
@@ -309,7 +331,9 @@
       "companyName": "Tên Công ty",
       "taxCode": "Mã số thuế",
       "billingAddress": "Địa chỉ hóa đơn",
-      "updatePartnerInfo": "Lưu thông tin đối tác"
+      "updatePartnerInfo": "Lưu thông tin đối tác",
+      "carrierInfo": "Thông tin Đơn vị vận chuyển",
+      "carrierName": "Tên đơn vị vận chuyển"
     }
   },
   "expenses": {
@@ -456,7 +480,8 @@
       "invoices": "📄 Hóa đơn",
       "approvals": "✅ Duyệt yêu cầu",
       "finance": "📈 Tài chính",
-      "partners": "🤝 Đối tác"
+      "partners": "🤝 Đối tác",
+      "shipments": "🚚 Vận đơn"
     },
     "system": "System",
     "custom": "Custom",
@@ -483,7 +508,8 @@
       "finance.read": "Xem Báo cáo Tài chính",
       "partners.read": "Xem Đối tác",
       "partners.write": "Quản lý Đối tác",
-      "partners.delete": "Xóa Đối tác"
+      "partners.delete": "Xóa Đối tác",
+      "shipments.read": "Xem Lịch sử Vận đơn"
     }
   },
   "audit": {
@@ -609,7 +635,8 @@
     "types": {
       "CUSTOMER": "Khách hàng",
       "SUPPLIER": "Nhà cung cấp",
-      "BOTH": "Cả hai"
+      "BOTH": "Cả hai",
+      "CARRIER": "Đơn vị vận chuyển"
     },
     "columns": {
       "name": "Tên",
@@ -653,5 +680,57 @@
       "SHIPPING": "Giao hàng",
       "ORIGIN": "Lấy hàng"
     }
+  },
+  "shipment": {
+    "title": "Thông tin Vận đơn",
+    "trackingCode": "Mã vận đơn",
+    "carrier": "Đơn vị vận chuyển",
+    "status": "Trạng thái",
+    "currentLocation": "Vị trí hiện tại",
+    "createdAt": "Ngày tạo",
+    "noData": "Chưa có thông tin vận đơn",
+    "statuses": {
+      "PREPARING": "Đang chuẩn bị",
+      "IN_TRANSIT": "Đang vận chuyển",
+      "DELIVERED": "Đã giao hàng"
+    }
+  },
+  "shipments": {
+    "title": "Lịch sử Vận đơn",
+    "subtitle": "Theo dõi trạng thái tất cả vận đơn trong hệ thống.",
+    "searchPlaceholder": "Tìm theo mã vận đơn, đơn vị vận chuyển...",
+    "noShipments": "Chưa có vận đơn nào.",
+    "columns": {
+      "trackingCode": "Mã vận đơn",
+      "carrier": "Đơn vị vận chuyển",
+      "status": "Trạng thái",
+      "location": "Vị trí",
+      "createdAt": "Ngày tạo"
+    },
+    "detail": {
+      "title": "Chi tiết Vận đơn",
+      "trackingInfo": "Thông tin Theo dõi",
+      "deliveryInfo": "Thông tin Giao hàng",
+      "metadata": "Dữ liệu Hệ thống",
+      "orderId": "Mã Đơn hàng",
+      "shipmentId": "Mã Vận đơn",
+      "updatedAt": "Cập nhật lần cuối",
+      "updateStatus": "Cập nhật Trạng thái",
+      "newStatus": "Trạng thái mới",
+      "selectStatus": "Chọn trạng thái...",
+      "locationPlaceholder": "Nhập vị trí hiện tại...",
+      "updateButton": "Cập nhật trạng thái",
+      "updateSuccess": "Cập nhật trạng thái thành công!",
+      "deliveredMessage": "Vận đơn đã được giao thành công"
+    },
+    "history": {
+      "title": "Lịch sử chuyển trạng thái",
+      "empty": "Chưa có lịch sử thay đổi trạng thái."
+    }
+  },
+  "toast": {
+    "rejectWarehouseSuccess": "Đã từ chối duyệt kho thành công",
+    "rejectAccountingSuccess": "Đã từ chối duyệt kế toán thành công",
+    "rejectFailed": "Từ chối thất bại: {{error}}"
   }
 }

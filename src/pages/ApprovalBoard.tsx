@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from "react";
-import { useGetApprovals, useApproveRequest, useRejectRequest } from "@/hooks/useApprovals";
+import { useGetApprovals, useRejectRequest } from "@/hooks/useApprovals";
 import { useTranslation } from "react-i18next";
 import { DataTable, usePagination } from "@/components/molecules/DataTable";
 import type { ColumnDef } from "@/components/molecules/DataTable";
@@ -33,7 +33,6 @@ export const ApprovalBoard: React.FC = () => {
     const { data, isLoading } = useGetApprovals(effectiveStatus, page, limit);
     const approvals = data?.approvals ?? [];
     const total = data?.total ?? 0;
-    const approveMutation = useApproveRequest();
     const rejectMutation = useRejectRequest();
 
     const parseRequestData = (rawData: string): Record<string, unknown> => {
@@ -59,13 +58,9 @@ export const ApprovalBoard: React.FC = () => {
         setPage(1);
     };
 
-    // Approval/reject handlers passed to dialog
-    const handleApprove = (id: string) => {
-        if (confirm(t("approvals.confirmApprove"))) {
-            approveMutation.mutate(id, {
-                onSuccess: () => setSelectedApproval(null),
-            });
-        }
+    // Called by DualApprovalPanel after warehouse/accounting approve succeeds
+    const handleApprove = (_id: string) => {
+        setSelectedApproval(null);
     };
 
     const handleReject = (id: string, reason: string) => {
@@ -193,7 +188,7 @@ export const ApprovalBoard: React.FC = () => {
                 onOpenChange={(open) => { if (!open) setSelectedApproval(null); }}
                 onApprove={handleApprove}
                 onReject={handleReject}
-                isApproving={approveMutation.isPending}
+                isApproving={false}
                 isRejecting={rejectMutation.isPending}
             />
         </div>

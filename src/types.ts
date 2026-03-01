@@ -32,6 +32,7 @@ export interface OrderPayload {
   tax_rule_id?: string;
   side_fees?: string;
   partner_id?: string;
+  carrier_id?: string;
   origin_address_id?: string;
   shipping_address_id?: string;
 }
@@ -219,6 +220,8 @@ export interface Invoice {
   company_name: string;
   tax_code: string;
   billing_address: string;
+  carrier_id: string | null;
+  carrier_name: string;
   created_at: string;
 }
 
@@ -260,6 +263,8 @@ export interface ApprovalRequest {
   reference_id: string;
   request_data: string;
   status: ApprovalStatus;
+  warehouse_approval: string;
+  accounting_approval: string;
   requested_by: string | null;
   requester_name: string;
   approved_by: string | null;
@@ -271,7 +276,7 @@ export interface ApprovalRequest {
 
 // --- PARTNER / CRM ---
 
-export type PartnerType = "CUSTOMER" | "SUPPLIER" | "BOTH";
+export type PartnerType = "CUSTOMER" | "SUPPLIER" | "BOTH" | "CARRIER";
 export type AddressType = "BILLING" | "SHIPPING" | "ORIGIN";
 
 export interface PartnerAddress {

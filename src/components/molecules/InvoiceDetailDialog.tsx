@@ -172,6 +172,19 @@ export const InvoiceDetailDialog: React.FC<InvoiceDetailDialogProps> = ({
                         </div>
                     </section>
 
+                    {/* Carrier Info */}
+                    {invoice.carrier_name && (
+                        <section className="space-y-3 pt-2 border-t">
+                            <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
+                                {f('carrierInfo')}
+                            </h3>
+                            <div className="space-y-1">
+                                <Label className="text-xs">{f('carrierName')}</Label>
+                                <p className="text-sm font-medium">{invoice.carrier_name}</p>
+                            </div>
+                        </section>
+                    )}
+
                     {/* Financial Info */}
                     <section className="space-y-3 pt-2 border-t">
                         <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">

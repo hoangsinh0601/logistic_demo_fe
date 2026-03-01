@@ -34,6 +34,7 @@ export const OrderForm: React.FC = () => {
     const [selectedPartnerId, setSelectedPartnerId] = useState<string>('');
     const [originAddressId, setOriginAddressId] = useState<string>('');
     const [shippingAddressId, setShippingAddressId] = useState<string>('');
+    const [selectedCarrierId, setSelectedCarrierId] = useState<string>('');
 
     type OrderItemState = {
         productId: string;
@@ -130,6 +131,7 @@ export const OrderForm: React.FC = () => {
             tax_rule_id: taxRuleId && taxRuleId !== 'NONE' ? taxRuleId : undefined,
             side_fees: sideFees || undefined,
             partner_id: selectedPartnerId || undefined,
+            carrier_id: selectedCarrierId || undefined,
             origin_address_id: originAddressId || undefined,
             shipping_address_id: shippingAddressId || undefined,
         };
@@ -143,6 +145,7 @@ export const OrderForm: React.FC = () => {
             setTaxRuleId('');
             setSideFees('');
             setSelectedPartnerId('');
+            setSelectedCarrierId('');
             setOriginAddressId('');
             setShippingAddressId('');
             setTimeout(() => {
@@ -271,6 +274,24 @@ export const OrderForm: React.FC = () => {
                                 </div>
                             </div>
                         )}
+                    </div>
+
+                    {/* Carrier Selection */}
+                    <div className="space-y-2 p-3 border rounded-md bg-muted/20">
+                        <Label className="text-sm font-semibold">{t('orders.carrier')}</Label>
+                        <Select value={selectedCarrierId || '_NONE_'} onValueChange={(v) => setSelectedCarrierId(v === '_NONE_' ? '' : v)}>
+                            <SelectTrigger>
+                                <SelectValue placeholder={t('orders.selectCarrier')} />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="_NONE_">{t('orders.noCarrier')}</SelectItem>
+                                {partners.filter(p => p.is_active && p.type === 'CARRIER').map(p => (
+                                    <SelectItem key={p.id} value={p.id}>
+                                        {p.company_name || p.name}
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
                     </div>
 
                     {/* Tax Rule & Side Fees */}

@@ -5,6 +5,7 @@ import { Badge } from '@/components/atoms/badge';
 import { Button } from '@/components/atoms/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/atoms/table';
 import { Can } from '@/components/atoms/Can';
+import { useApproveWarehouse, useApproveAccounting, useRejectWarehouse, useRejectAccounting, useOrderShipment } from '@/hooks/useOrders';
 import type { ApprovalRequest, ApprovalRequestType, ApprovalStatus } from '@/types';
 
 interface ApprovalDetailDialogProps {
@@ -123,9 +124,19 @@ export const ApprovalDetailDialog: React.FC<ApprovalDetailDialogProps> = ({
                     </div>
                 )}
 
-                {/* Approve / Reject Actions */}
-                {isPending && onApprove && onReject && (
-                    <Can permission="approvals.approve">
+                {/* Dual Approval Panel — for CREATE_ORDER, shown while PENDING */}
+                {approval.request_type === 'CREATE_ORDER' && approval.status === 'PENDING' && (
+                    <DualApprovalPanel approval={approval} onReject={onReject} isRejecting={isRejecting} onApprove={onApprove} />
+                )}
+
+                {/* Shipment Tracking Card — for CREATE_ORDER only */}
+                {approval.request_type === 'CREATE_ORDER' && (
+                    <ShipmentTrackingCard referenceId={approval.reference_id} />
+                )}
+
+                {/* Approve / Reject Actions (for non-order types) */}
+                {isPending && approval.request_type !== 'CREATE_ORDER' && onApprove && onReject && (
+                    <Can anyOf={["orders.approve_warehouse", "orders.approve_accounting"]}>
                         <div className="pt-4 border-t space-y-3">
                             {!showRejectForm ? (
                                 <div className="flex items-center justify-end gap-3">
@@ -244,6 +255,19 @@ const OrderDataView: React.FC<{ data: Record<string, unknown>; f: (k: string) =>
                 </div>
             )}
 
+            {/* Carrier Info */}
+            {Boolean(data.carrier_name) && (
+                <div className="space-y-2 pt-2 border-t">
+                    <p className="text-xs text-muted-foreground font-medium">{f('carrierInfo')}</p>
+                    <div className="grid grid-cols-2 gap-3 text-sm">
+                        <InfoRow label={f('carrierName')}>{String(data.carrier_name)}</InfoRow>
+                        {Boolean(data.carrier_company) && (
+                            <InfoRow label={f('carrierCompany')}>{String(data.carrier_company)}</InfoRow>
+                        )}
+                    </div>
+                </div>
+            )}
+
             {items.length > 0 && (
                 <div className="space-y-2">
                     <p className="text-xs text-muted-foreground font-medium">{f('items')}</p>
@@ -299,3 +323,231 @@ const GenericDataView: React.FC<{ data: Record<string, unknown> }> = ({ data }) 
         {JSON.stringify(data, null, 2)}
     </pre>
 );
+
+// Dual Approval Panel — independent Warehouse + Accounting approvals with per-flow reject
+const DualApprovalPanel: React.FC<{ approval: ApprovalRequest; onReject?: (id: string, reason: string) => void; isRejecting?: boolean; onApprove?: (id: string) => void }> = ({
+    approval,
+    onApprove,
+}) => {
+    const { t } = useTranslation();
+    const approveWarehouse = useApproveWarehouse();
+    const approveAccounting = useApproveAccounting();
+    const rejectWarehouse = useRejectWarehouse();
+    const rejectAccounting = useRejectAccounting();
+    const [error, setError] = useState<string | null>(null);
+    const [successMsg, setSuccessMsg] = useState<string | null>(null);
+    const [rejectTarget, setRejectTarget] = useState<'warehouse' | 'accounting' | null>(null);
+    const [rejectReason, setRejectReason] = useState('');
+
+    const warehouseStatus = approval.warehouse_approval;
+    const accountingStatus = approval.accounting_approval;
+    const warehouseDone = warehouseStatus === 'APPROVED';
+    const accountingDone = accountingStatus === 'APPROVED';
+    const isPending = approval.status === 'PENDING';
+
+    const getStatusBadge = (status: string, doneLabel: string) => {
+        if (status === 'APPROVED') return <Badge variant="default">{doneLabel}</Badge>;
+        if (status === 'REJECTED') return <Badge variant="destructive">{t('approvals.statusRejected')}</Badge>;
+        return <Badge variant="secondary">{t('approvals.dualApproval.pending')}</Badge>;
+    };
+
+    const handleWarehouseApprove = async () => {
+        if (!window.confirm(t('approvals.dualApproval.confirmWarehouse'))) return;
+        setError(null);
+        try {
+            await approveWarehouse.mutateAsync(approval.id);
+            onApprove?.(approval.id);
+        } catch (err: unknown) {
+            setError(err instanceof Error ? err.message : String(err));
+        }
+    };
+
+    const handleAccountingApprove = async () => {
+        if (!window.confirm(t('approvals.dualApproval.confirmAccounting'))) return;
+        setError(null);
+        try {
+            await approveAccounting.mutateAsync(approval.id);
+            onApprove?.(approval.id);
+        } catch (err: unknown) {
+            setError(err instanceof Error ? err.message : String(err));
+        }
+    };
+
+    const handleRejectSubmit = async () => {
+        if (!window.confirm(t('approvals.dualApproval.confirmReject'))) return;
+        setError(null);
+        setSuccessMsg(null);
+        try {
+            if (rejectTarget === 'warehouse') {
+                await rejectWarehouse.mutateAsync({ id: approval.id, reason: rejectReason });
+                setSuccessMsg(t('toast.rejectWarehouseSuccess'));
+            } else if (rejectTarget === 'accounting') {
+                await rejectAccounting.mutateAsync({ id: approval.id, reason: rejectReason });
+                setSuccessMsg(t('toast.rejectAccountingSuccess'));
+            }
+            setRejectTarget(null);
+            setRejectReason('');
+            // Auto-close dialog after a short delay
+            setTimeout(() => onApprove?.(approval.id), 1500);
+        } catch (err: unknown) {
+            setError(err instanceof Error ? err.message : String(err));
+        }
+    };
+
+    const isRejectPending = rejectWarehouse.isPending || rejectAccounting.isPending;
+
+    return (
+        <div className="space-y-3 pt-3 border-t">
+            <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
+                {t('approvals.dualApproval.title')}
+            </h3>
+
+            {error && (
+                <p className="text-sm text-destructive bg-destructive/10 rounded-md px-3 py-2">{error}</p>
+            )}
+
+            {successMsg && (
+                <p className="text-sm text-green-700 bg-green-50 dark:text-green-300 dark:bg-green-900/20 rounded-md px-3 py-2">{successMsg}</p>
+            )}
+
+            <div className="grid grid-cols-2 gap-4">
+                {/* Warehouse Section */}
+                <div className="border rounded-lg p-3 space-y-2">
+                    <p className="text-xs font-medium text-muted-foreground">{t('approvals.dualApproval.warehouse')}</p>
+                    {getStatusBadge(warehouseStatus, t('approvals.dualApproval.delivered'))}
+                    {!warehouseDone && warehouseStatus !== 'REJECTED' && isPending && (
+                        <Can permission="orders.approve_warehouse">
+                            <div className="flex gap-2 mt-2">
+                                <Button
+                                    size="sm"
+                                    className="flex-1"
+                                    onClick={handleWarehouseApprove}
+                                    disabled={approveWarehouse.isPending}
+                                >
+                                    {approveWarehouse.isPending ? t('common.loading') : t('approvals.dualApproval.approveWarehouse')}
+                                </Button>
+                                <Button
+                                    size="sm"
+                                    variant="destructive"
+                                    className="flex-1"
+                                    onClick={() => setRejectTarget('warehouse')}
+                                    disabled={isRejectPending}
+                                >
+                                    {t('approvals.reject')}
+                                </Button>
+                            </div>
+                        </Can>
+                    )}
+                </div>
+
+                {/* Accounting Section */}
+                <div className="border rounded-lg p-3 space-y-2">
+                    <p className="text-xs font-medium text-muted-foreground">{t('approvals.dualApproval.accounting')}</p>
+                    {getStatusBadge(accountingStatus, t('approvals.dualApproval.invoiced'))}
+                    {!accountingDone && accountingStatus !== 'REJECTED' && isPending && (
+                        <Can permission="orders.approve_accounting">
+                            <div className="flex gap-2 mt-2">
+                                <Button
+                                    size="sm"
+                                    className="flex-1"
+                                    onClick={handleAccountingApprove}
+                                    disabled={approveAccounting.isPending}
+                                >
+                                    {approveAccounting.isPending ? t('common.loading') : t('approvals.dualApproval.approveAccounting')}
+                                </Button>
+                                <Button
+                                    size="sm"
+                                    variant="destructive"
+                                    className="flex-1"
+                                    onClick={() => setRejectTarget('accounting')}
+                                    disabled={isRejectPending}
+                                >
+                                    {t('approvals.reject')}
+                                </Button>
+                            </div>
+                        </Can>
+                    )}
+                </div>
+            </div>
+
+            {/* Reject Reason Form — appears when a reject target is selected */}
+            {rejectTarget && (
+                <div className="space-y-3 animate-in fade-in slide-in-from-top-2 duration-200 mt-2 p-3 border border-destructive/30 rounded-lg bg-destructive/5">
+                    <p className="text-sm font-medium">
+                        {rejectTarget === 'warehouse'
+                            ? t('approvals.dualApproval.rejectWarehouseTitle')
+                            : t('approvals.dualApproval.rejectAccountingTitle')}
+                    </p>
+                    <textarea
+                        className="text-sm border rounded-md p-3 w-full min-h-[80px] resize-none focus:outline-none focus:ring-2 focus:ring-ring"
+                        placeholder={t('approvals.rejectReason')}
+                        value={rejectReason}
+                        onChange={(e) => setRejectReason(e.target.value)}
+                    />
+                    <div className="flex items-center justify-end gap-3">
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => { setRejectTarget(null); setRejectReason(''); }}
+                        >
+                            {t('common.cancel')}
+                        </Button>
+                        <Button
+                            variant="destructive"
+                            size="sm"
+                            onClick={handleRejectSubmit}
+                            disabled={isRejectPending}
+                        >
+                            {isRejectPending ? t('common.loading') : t('approvals.confirmReject')}
+                        </Button>
+                    </div>
+                </div>
+            )}
+        </div>
+    );
+};
+
+// Shipment Tracking Card — shown when warehouse has created a shipment for the order
+const ShipmentTrackingCard: React.FC<{ referenceId: string }> = ({ referenceId }) => {
+    const { t } = useTranslation();
+    const { data: shipment, isLoading } = useOrderShipment(referenceId);
+
+    if (isLoading || !shipment) return null;
+
+    const statusColors: Record<string, string> = {
+        PREPARING: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300',
+        IN_TRANSIT: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300',
+        DELIVERED: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300',
+    };
+
+    return (
+        <div className="space-y-3 pt-3 border-t">
+            <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
+                🚚 {t('shipment.title')}
+            </h3>
+            <div className="border rounded-lg p-4 space-y-3 bg-muted/30">
+                <div className="grid grid-cols-2 gap-3 text-sm">
+                    <InfoRow label={t('shipment.trackingCode')}>
+                        <span className="font-mono font-semibold">{shipment.tracking_code || '—'}</span>
+                    </InfoRow>
+                    <InfoRow label={t('shipment.carrier')}>
+                        {shipment.carrier_name || '—'}
+                    </InfoRow>
+                    <InfoRow label={t('shipment.status')}>
+                        <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${statusColors[shipment.status] || 'bg-gray-100 text-gray-800'}`}>
+                            {t(`shipment.statuses.${shipment.status}`)}
+                        </span>
+                    </InfoRow>
+                    <InfoRow label={t('shipment.currentLocation')}>
+                        {shipment.current_location || '—'}
+                    </InfoRow>
+                    {shipment.created_at && (
+                        <InfoRow label={t('shipment.createdAt')}>
+                            {new Date(shipment.created_at).toLocaleString('vi-VN')}
+                        </InfoRow>
+                    )}
+                </div>
+            </div>
+        </div>
+    );
+};

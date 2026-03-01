@@ -19,12 +19,14 @@ const TYPE_OPTIONS: Array<{ value: string; labelKey: string }> = [
     { value: "CUSTOMER", labelKey: "partners.types.CUSTOMER" },
     { value: "SUPPLIER", labelKey: "partners.types.SUPPLIER" },
     { value: "BOTH", labelKey: "partners.types.BOTH" },
+    { value: "CARRIER", labelKey: "partners.types.CARRIER" },
 ];
 
 const typeBadgeVariant: Record<PartnerType, "default" | "secondary" | "outline"> = {
     CUSTOMER: "default",
     SUPPLIER: "secondary",
     BOTH: "outline",
+    CARRIER: "secondary",
 };
 
 export const PartnerList: React.FC = () => {

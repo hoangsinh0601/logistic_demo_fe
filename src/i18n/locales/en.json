@@ -46,6 +46,7 @@
     "users": "Users Management",
     "roles": "Roles & Permissions",
     "partners": "Partners",
+    "shipments": "Shipments",
     "logout": "Logout"
   },
   "auth": {
@@ -182,7 +183,10 @@
     "shippingAddress": "Shipping Address",
     "selectOrigin": "Select origin...",
     "selectShipping": "Select shipping...",
-    "noAddresses": "No addresses available"
+    "noAddresses": "No addresses available",
+    "carrier": "Shipping Provider",
+    "selectCarrier": "Select carrier...",
+    "noCarrier": "— No carrier —"
   },
   "approvals": {
     "title": "Approval Board",
@@ -249,7 +253,25 @@
       "companyName": "Company Name",
       "taxCode": "Tax Code",
       "originAddress": "Origin Address",
-      "shippingAddress": "Shipping Address"
+      "shippingAddress": "Shipping Address",
+      "carrierInfo": "Carrier Information",
+      "carrierName": "Carrier Name",
+      "carrierCompany": "Carrier Company"
+    },
+    "dualApproval": {
+      "title": "Warehouse & Accounting Approval",
+      "warehouse": "Warehouse Operations",
+      "accounting": "Accounting / Invoice",
+      "pending": "Pending",
+      "delivered": "Delivered",
+      "invoiced": "Invoiced",
+      "approveWarehouse": "Approve Warehouse",
+      "approveAccounting": "Approve Accounting",
+      "confirmWarehouse": "Confirm warehouse approval? Stock will be deducted.",
+      "confirmAccounting": "Confirm accounting approval? An invoice will be created.",
+      "confirmReject": "Are you sure you want to reject this order?",
+      "rejectWarehouseTitle": "Reject Warehouse Approval",
+      "rejectAccountingTitle": "Reject Accounting Approval"
     }
   },
   "invoices": {
@@ -309,7 +331,9 @@
       "companyName": "Company Name",
       "taxCode": "Tax Code",
       "billingAddress": "Billing Address",
-      "updatePartnerInfo": "Save Partner Info"
+      "updatePartnerInfo": "Save Partner Info",
+      "carrierInfo": "Carrier Information",
+      "carrierName": "Carrier Name"
     }
   },
   "expenses": {
@@ -456,7 +480,8 @@
       "invoices": "📄 Invoices",
       "approvals": "✅ Approvals",
       "finance": "📈 Finance",
-      "partners": "🤝 Partners"
+      "partners": "🤝 Partners",
+      "shipments": "🚚 Shipments"
     },
     "system": "System",
     "custom": "Custom",
@@ -483,7 +508,8 @@
       "finance.read": "View Financial Reports",
       "partners.read": "View Partners",
       "partners.write": "Manage Partners",
-      "partners.delete": "Delete Partners"
+      "partners.delete": "Delete Partners",
+      "shipments.read": "View Shipment History"
     }
   },
   "audit": {
@@ -609,7 +635,8 @@
     "types": {
       "CUSTOMER": "Customer",
       "SUPPLIER": "Supplier",
-      "BOTH": "Both"
+      "BOTH": "Both",
+      "CARRIER": "Carrier"
     },
     "columns": {
       "name": "Name",
@@ -653,5 +680,57 @@
       "SHIPPING": "Shipping (Delivery)",
       "ORIGIN": "Origin (Pickup)"
     }
+  },
+  "shipment": {
+    "title": "Shipment Tracking",
+    "trackingCode": "Tracking Code",
+    "carrier": "Carrier",
+    "status": "Status",
+    "currentLocation": "Current Location",
+    "createdAt": "Created At",
+    "noData": "No shipment information available",
+    "statuses": {
+      "PREPARING": "Preparing",
+      "IN_TRANSIT": "In Transit",
+      "DELIVERED": "Delivered"
+    }
+  },
+  "shipments": {
+    "title": "Shipment History",
+    "subtitle": "Track all shipments in the system.",
+    "searchPlaceholder": "Search by tracking code, carrier...",
+    "noShipments": "No shipments found.",
+    "columns": {
+      "trackingCode": "Tracking Code",
+      "carrier": "Carrier",
+      "status": "Status",
+      "location": "Location",
+      "createdAt": "Created At"
+    },
+    "detail": {
+      "title": "Shipment Detail",
+      "trackingInfo": "Tracking Information",
+      "deliveryInfo": "Delivery Information",
+      "metadata": "System Metadata",
+      "orderId": "Order ID",
+      "shipmentId": "Shipment ID",
+      "updatedAt": "Last Updated",
+      "updateStatus": "Update Status",
+      "newStatus": "New Status",
+      "selectStatus": "Select status...",
+      "locationPlaceholder": "Enter current location...",
+      "updateButton": "Update Status",
+      "updateSuccess": "Status updated successfully!",
+      "deliveredMessage": "This shipment has been delivered successfully"
+    },
+    "history": {
+      "title": "Status Change History",
+      "empty": "No status changes recorded yet."
+    }
+  },
+  "toast": {
+    "rejectWarehouseSuccess": "Warehouse rejection successful",
+    "rejectAccountingSuccess": "Accounting rejection successful",
+    "rejectFailed": "Rejection failed: {{error}}"
   }
 }
